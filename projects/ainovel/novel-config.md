@@ -4,9 +4,9 @@
 
 ```yaml
 project:
-  name: "AI무당은 로그를 본다"
+  name: "죽은 고객이 우리 AI에 로그인했다"
   target_platform: "문피아"
-  target_genre: "현대판타지, AI 전문가물, 오컬트 미스터리, 썰풀이형 사건 해결물"
+  target_genre: "현대판타지, AI 전문가물, 오컬트 미스터리, 직장인 사건 해결물"
   episode_dir: "episode/"
   work_dir: "revision/"
   design_dir: "design/"
@@ -20,6 +20,7 @@ project:
 | proposals | _workspace/01_proposals.md | 3개 기획안 비교 |
 | synopsis | _workspace/02_synopsis_150eps.md | 150화 간단 시놉스 |
 | contest_brief | _workspace/00_contest_brief.md | 공모전 기준 요약 |
+| refined_core | _workspace/03_refined_core.md | 소재 위계 정리 |
 
 ## 보존 가드레일
 
