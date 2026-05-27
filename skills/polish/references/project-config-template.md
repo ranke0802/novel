@@ -1,13 +1,12 @@
 # novel-config.md 작성 가이드
 
-윤문 스킬이 프로젝트별로 달라지는 설정을 읽어오는 **프로젝트 설정 파일** 작성법.
-각 소설 프로젝트 루트에 `novel-config.md`를 만들어 아래 섹션을 채운다.
+창작/윤문/재작성 스킬이 프로젝트별 설정을 읽어오는 **프로젝트 설정 파일** 작성법.
+각 소설 프로젝트 루트에 `novel-config.md`를 만들고, 파일 전체를 아래 YAML 구조로 작성한다.
+마크다운 표를 섞지 않는다.
 
 ---
 
-## 필수 섹션
-
-### 1. 프로젝트 기본 정보
+## 표준 YAML 스키마
 
 ```yaml
 project:
@@ -17,58 +16,97 @@ project:
   episode_dir: "episode/"           # 에피소드 파일 위치 (ep001.md, ep002.md ...)
   work_dir: "revision/"             # fix_plan.md, learnings.md 등 윤문 작업 파일 위치
   design_dir: "design/"             # 설정문서 디렉토리
+
+design_documents:
+  bootstrap: "design/bootstrap.md"
+  character_core: "design/character_sheet.md"
+  character_detail: "design/character_sheet_detail.md"
+  dialogue_dna: "design/character_sheet.md#dialogue-dna" # 선택. 없으면 character_detail로 대체
+  writing_rules: "CLAUDE.md"                              # 선택. 없으면 프로젝트 루트 CLAUDE.md
+  web_novel_guide: "design/web-novel-guide.md"            # 선택
+  verification: "design/verification.md"                  # 선택
+  plot_macro: "design/plot-hook-guide.md"                 # 선택
+
+ep_range_table:
+  - range: "EP001~EP026"
+    label: "1막"
+    plot_guide: "design/plot-hook-guide_act1.md"
+    plot_guide_detail: ""                 # 선택. 작은 설계 산출물이 있으면 우선 사용
+    character_detail: ""                  # 선택. 범위 전용 캐릭터 상세 문서
+  - range: "EP027~EP076"
+    label: "2막"
+    plot_guide: "design/plot-hook-guide_act2.md"
+    plot_guide_detail: "design/plot-hook-guide_act2_detail_ep027-076.md"
+    character_detail: "design/character_sheet_detail_ep027-076.md"
+
+guard_rails:
+  - "전문성 밀도를 훼손하지 않는다"
+  - "작품 고유 분위기를 유지한다"
+
+number_source_priority:
+  - ep_range_table[].plot_guide_detail
+  - ep_range_table[].plot_guide
+  - design_documents.bootstrap
+  - design_documents.verification
+  - previous_episode
+
+key_turning_points:
+  - ep: "EP025"
+    purpose: "1막 종결 및 유료 전환 유도"
+    min_hook_intensity: 4
+
+custom_axes: {}
+
+silence_exceptions:
+  - "캐릭터Y"
+
+create:
+  draft_chars: "6000-10000"
+  final_chars: "5000-8000"
+  dialogue_ratio: "40-60%"
+  max_scenes: 4
+  continuity_lookback: 2
+  hook_targets:
+    opening_intensity: 4
+    ending_intensity: 5
+
+rewrite:
+  character_dialogue_dna: "design/character-dialogue-dna.md" # 선택. 없으면 design_documents.dialogue_dna 사용
+  work_dir: "revision/"                                      # 선택. 없으면 project.work_dir 사용
+  guard_rails:
+    - "경악 방식 교체 불가"
 ```
 
 > `project.target_platform`에는 canonical name만 기록한다. 예: `문피아`, `카카오페이지`
+> 모든 경로는 `novel-config.md`가 있는 프로젝트 루트 기준 상대 경로다.
 
-### 2. 설정문서 매핑
+## 필수 검증 규칙
 
-윤문 에이전트가 참조하는 설정문서 경로. 에이전트별로 어떤 문서를 읽어야 하는지 정의.
+- `project.target_platform`은 문피아, 네이버시리즈, 카카오페이지, 리디, 조아라, 노벨피아 중 하나여야 한다.
+- `project.episode_dir`, `project.work_dir`, `project.design_dir`는 비어 있으면 안 된다.
+- `design_documents.bootstrap`, `design_documents.character_core`, `design_documents.character_detail`은 파일이 존재해야 한다.
+- `ep_range_table`은 최소 1개 행이 있어야 하며, 각 행의 `range`는 `EP001~EP026` 형식이어야 한다.
+- `ep_range_table[].plot_guide`는 파일이 존재해야 한다.
+- EP 범위는 겹치면 안 된다.
+- 대상 EP가 어떤 범위에도 속하지 않으면 마지막 범위의 문서를 사용하고 `[범위초과]` 경고를 출력한다.
+- `plot_guide_detail` 또는 범위 전용 `character_detail`이 있고 파일이 존재하면 공통 문서보다 우선 사용한다.
 
-#### 2-1. 공통 문서 (모든 EP)
+> **플랫폼별 기준**: `_workspace/platform-guide-{platform}.md` 파일이 있으면 platform-optimizer가 해당 플랫폼의 특화 기준을 자동 적용한다. 플랫폼은 문피아, 네이버시리즈, 카카오페이지, 리디, 조아라, 노벨피아만 허용한다. 예: `_workspace/platform-guide-문피아.md`, `_workspace/platform-guide-munpia.md`, `_workspace/platform-guide-kakaopage.md`
+> 문피아 타겟에서 프로젝트 플랫폼 가이드가 없으면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`를 기본 기준으로 사용한다.
+> 문피아 타겟의 운영 감각은 주 5~7일 연재와 5,000자 전후 회차지만, 실제 글자수 게이트는 항상 novel-config.md의 `create.final_chars`를 우선한다.
 
-| 문서 키 | 경로 | 용도 |
-|---------|------|------|
-| character_core | design/character_sheet.md | 캐릭터 핵심 정의, 인물 관계, 고유 설정 |
-| character_detail | design/character_sheet_detail.md | 보이스표, 호칭표, 비언어 태그, 관계 변화, 호칭 전환 조건 |
-| dialogue_dna | design/character_sheet.md#dialogue-dna | Dialogue DNA (대사 고유성 정의). 캐릭터시트 내 섹션 또는 별도 파일. 없으면 character_detail로 대체 |
-| bootstrap | design/bootstrap.md | 매크로 수치, 세계관 규칙, 시간선 |
-| writing_rules | CLAUDE.md | 집필 규칙 바이블 (rewrite 전용, 기본값: 프로젝트 루트의 CLAUDE.md) |
+## 참조 키 의미
 
-#### 호칭 전환 조건 (선택)
-관계 변화에 따라 호칭이 바뀌는 경우 아래 형식으로 기술한다.
-| 화자 | 청자 | 전환 트리거 (EP/이벤트) | 이전 허용 | 이후 위반 | 등급 |
-|------|------|----------------------|----------|----------|------|
-
-#### 2-2. EP 범위별 설정문서
-
-아래 마크다운 테이블 형식을 **반드시** 준수한다. 오케스트레이터가 이 테이블을 파싱하여 EP 번호에 맞는 플롯 가이드와 캐릭터 시트를 자동 선택한다.
-
-**파싱 규칙:**
-- `EP 범위` 열: `EP{시작번호}~EP{종료번호}` 형식 (3자리 숫자, 예: EP001~EP026)
-- 범위는 **겹치지 않아야** 한다
-- 대상 EP가 어떤 범위에도 속하지 않으면: 마지막 범위의 문서를 사용하고 `[범위초과]` 경고를 출력한다
-- 세부 플롯 가이드/세부 캐릭터 시트(작은 설계 산출물)가 존재하면 우선 사용하고, 없으면 큰 설계 문서를 사용한다
-
-| EP 범위 | 레이블 | 플롯 가이드 경로 | 세부 플롯 가이드 (선택) | 세부 캐릭터 시트 (선택) |
-|---------|--------|----------------|----------------------|----------------------|
-| EP001~EP026 | 1막 | design/plot-hook-guide_act1.md | | |
-| EP027~EP076 | 2막 | design/plot-hook-guide_act2.md | design/plot-hook-guide_act2_detail_ep027-076.md | design/character_sheet_detail_ep027-076.md |
-| EP077~EP150 | 3막 | design/plot-hook-guide_act3.md | | |
-
-> 오케스트레이터는 대상 EP 번호가 속하는 행의 플롯 가이드를 `{PLOT_DOC}`로 사용한다.
-> 세부 플롯 가이드 열에 경로가 있고 해당 파일이 존재하면 세부 가이드를 우선 사용한다.
-> 세부 캐릭터 시트 열에 경로가 있고 해당 파일이 존재하면 공통 `character_detail` 대신 이를 우선 사용한다.
-
-#### 2-3. 보조 참조 (선택)
-
-| 문서 키 | 경로 | 용도 |
-|---------|------|------|
-| web_novel_guide | design/web-novel-guide.md | 모바일 최적화 원칙 (platform-optimizer용) |
-| verification | design/verification.md | 검증 완료 수치 기록 (story-analyst용) |
-| plot_macro | design/plot-hook-guide.md | 핵심 전환 포인트 매크로 (platform-optimizer용) |
-
-> **플랫폼별 기준**: `_workspace/platform-guide-{platform}.md` 파일이 있으면 platform-optimizer가 해당 플랫폼의 특화 기준을 자동 적용한다. 플랫폼은 문피아, 네이버시리즈, 카카오페이지, 리디, 조아라, 노벨피아만 허용한다. 예: `_workspace/platform-guide-munpia.md`, `_workspace/platform-guide-kakaopage.md`
+| 키 | 용도 |
+|----|------|
+| `design_documents.character_core` | 캐릭터 핵심 정의, 인물 관계, 고유 설정 |
+| `design_documents.character_detail` | 보이스표, 호칭표, 비언어 태그, 관계 변화 |
+| `design_documents.dialogue_dna` | Dialogue DNA. 없으면 character_detail로 대체 |
+| `design_documents.bootstrap` | 매크로 수치, 세계관 규칙, 시간선 |
+| `design_documents.writing_rules` | 집필 규칙 바이블 |
+| `ep_range_table[].plot_guide` | 해당 EP 범위의 큰 설계 플롯 가이드 |
+| `ep_range_table[].plot_guide_detail` | 해당 EP 범위의 작은 설계 플롯 가이드 |
+| `ep_range_table[].character_detail` | 해당 EP 범위 전용 캐릭터 상세 문서 |
 
 ### 3. 에이전트별 문서 매핑
 
@@ -77,44 +115,44 @@ project:
 #### rule-checker
 | 축 | 참조 문서 키 | 용도 |
 |----|------------|------|
-| VOICE | character_detail | 보이스표(종결어미·길이·패턴) 대조 |
-| TITLE | character_detail | 호칭 규칙표(화자×청자 매트릭스), 호칭 전환 조건 |
-| BANNED | character_core | 주인공 감정 표현 규칙 (있을 경우) |
+| VOICE | design_documents.character_detail 또는 ep_range_table[].character_detail | 보이스표(종결어미·길이·패턴) 대조 |
+| TITLE | design_documents.character_detail 또는 ep_range_table[].character_detail | 호칭 규칙표(화자×청자 매트릭스), 호칭 전환 조건 |
+| BANNED | design_documents.character_core | 주인공 감정 표현 규칙 (있을 경우) |
 | TRANS | — | grep 기반, 설정문서 불필요 |
 | SILENCE | — | 카운트 기반, 설정문서 불필요 |
 
 #### story-analyst
 | 축 | 참조 문서 키 | 용도 |
 |----|------------|------|
-| TIMELINE | plot_by_ep, bootstrap | EP별 확정 시간대, 사건 순서 |
-| NUMBER | plot_by_ep, bootstrap, character_core | EP별 확정 수치 (면적·자금·수확량 등) |
-| PLAUSIBILITY | character_core | 캐릭터 능력, 시대 고증 |
+| TIMELINE | ep_range_table[].plot_guide 또는 plot_guide_detail, design_documents.bootstrap | EP별 확정 시간대, 사건 순서 |
+| NUMBER | ep_range_table[].plot_guide 또는 plot_guide_detail, design_documents.bootstrap, design_documents.character_core | EP별 확정 수치 (면적·자금·수확량 등) |
+| PLAUSIBILITY | design_documents.character_core | 캐릭터 능력, 시대 고증 |
 | SCENE | 직전 2화 | 화간 연속성 (설정문서 불필요) |
 | UNIFORM | 직전 2화 | 패턴 대조 (설정문서 불필요) |
 
 #### platform-optimizer
 | 축 | 참조 문서 키 | 용도 |
 |----|------------|------|
-| HOOK | plot_by_ep | EP별 훅 유형·감정강도, 핵심 전환 포인트 |
-| OPENING | plot_by_ep | EP별 비트 구조 |
-| MOBILE | web_novel_guide | 모바일 최적화 원칙 |
+| HOOK | ep_range_table[].plot_guide 또는 plot_guide_detail | EP별 훅 유형·감정강도, 핵심 전환 포인트 |
+| OPENING | ep_range_table[].plot_guide 또는 plot_guide_detail | EP별 비트 구조 |
+| MOBILE | design_documents.web_novel_guide | 모바일 최적화 원칙 |
 | SUMMARY | — | 정량 측정 기반, 설정문서 불필요 |
 
 #### alive-enhancer
 | 축 | 참조 문서 키 | 용도 |
 |----|------------|------|
-| ALIVE-1 (메아리) | character_detail | 대화 DNA, 캐릭터별 반응 경로 |
-| ALIVE-2 (침묵) | character_detail | 비언어 태그 팔레트 |
-| ALIVE-3 (긴장점) | character_core | 조연별 고유 긴장점, 핵심 역할 |
-| ALIVE-4 (거리감) | character_core | 주요 관계 곡선, 관계 규칙 |
+| ALIVE-1 (메아리) | design_documents.character_detail 또는 ep_range_table[].character_detail | 대화 DNA, 캐릭터별 반응 경로 |
+| ALIVE-2 (침묵) | design_documents.character_detail 또는 ep_range_table[].character_detail | 비언어 태그 팔레트 |
+| ALIVE-3 (긴장점) | design_documents.character_core | 조연별 고유 긴장점, 핵심 역할 |
+| ALIVE-4 (거리감) | design_documents.character_core | 주요 관계 곡선, 관계 규칙 |
 
 #### revision-executor / revision-reviewer
 | 교정/검증 유형 | 참조 문서 키 | 용도 |
 |--------------|------------|------|
-| TIMELINE/NUMBER | plot_by_ep, bootstrap | 정본 수치 확인 |
-| VOICE/TITLE | character_detail | 보이스표·호칭표 준수 교정 |
-| 캐릭터 고유 설정 | character_core | 주인공 능력, 배경 정본 |
-| ALIVE | character_detail | 비언어 태그·관계 변화표 |
+| TIMELINE/NUMBER | ep_range_table[].plot_guide 또는 plot_guide_detail, design_documents.bootstrap | 정본 수치 확인 |
+| VOICE/TITLE | design_documents.character_detail 또는 ep_range_table[].character_detail | 보이스표·호칭표 준수 교정 |
+| 캐릭터 고유 설정 | design_documents.character_core | 주인공 능력, 배경 정본 |
+| ALIVE | design_documents.character_detail 또는 ep_range_table[].character_detail | 비언어 태그·관계 변화표 |
 
 ### 4. 보존 가드레일
 
@@ -135,10 +173,11 @@ project:
 수치 불일치 발견 시 어느 문서를 정본으로 삼을지 순서.
 
 ```markdown
-1. plot_by_ep — EP별 확정 수치 (가장 구체적)
-2. bootstrap — 매크로 수치, 세계관 규칙
-3. verification — 검증 완료 수치 기록
-4. 직전 에피소드 — 서사 연속성
+1. ep_range_table[].plot_guide_detail — EP별 세부 확정 수치 (가장 구체적)
+2. ep_range_table[].plot_guide — EP 범위별 확정 수치
+3. design_documents.bootstrap — 매크로 수치, 세계관 규칙
+4. design_documents.verification — 검증 완료 수치 기록
+5. 직전 에피소드 — 서사 연속성
 ```
 
 ### 6. 핵심 전환 포인트
@@ -184,10 +223,10 @@ story-analyst가 LOGIC 진단 시 함께 수행한다.
 #### 예시 A: PASTLIFE — 전생/회귀 설정 정합성 (회귀물)
 
 ```yaml
-custom_axis:
-  name: PASTLIFE
-  description: "주인공의 전생/회귀 설정과 에피소드 서술의 정합성 검증"
-  agent: story-analyst
+custom_axes:
+  PASTLIFE:
+    description: "주인공의 전생/회귀 설정과 에피소드 서술의 정합성 검증"
+    agent: story-analyst
 ```
 
 레이어 구성:
@@ -200,10 +239,10 @@ custom_axis:
 #### 예시 B: MAGIC_SYSTEM — 마법 체계 정합성 (판타지)
 
 ```yaml
-custom_axis:
-  name: MAGIC_SYSTEM
-  description: "마법/능력 체계의 규칙과 에피소드 서술의 정합성 검증"
-  agent: story-analyst
+custom_axes:
+  MAGIC_SYSTEM:
+    description: "마법/능력 체계의 규칙과 에피소드 서술의 정합성 검증"
+    agent: story-analyst
 ```
 
 레이어 구성:
@@ -214,10 +253,10 @@ custom_axis:
 #### 예시 C: RELATIONSHIP_LOGIC — 관계선 정합성 (로맨스)
 
 ```yaml
-custom_axis:
-  name: RELATIONSHIP_LOGIC
-  description: "캐릭터 간 관계 단계와 에피소드 내 행동/대화의 정합성 검증"
-  agent: story-analyst
+custom_axes:
+  RELATIONSHIP_LOGIC:
+    description: "캐릭터 간 관계 단계와 에피소드 내 행동/대화의 정합성 검증"
+    agent: story-analyst
 ```
 
 레이어 구성:
@@ -272,7 +311,7 @@ custom_axis:
 ## 윤문/rewrite 스킬이 설정을 사용하는 방법
 
 1. **Step 0 초기화**: `novel-config.md`를 읽고 설정 파싱
-2. **EP별 문서 결정**: 설정의 "EP 범위별 플롯 가이드"에서 해당 EP의 플롯 문서 선택
+2. **EP별 문서 결정**: 설정의 `ep_range_table`에서 해당 EP의 플롯 문서 선택
 3. **Phase 1 에이전트 호출**: 에이전트별 문서 매핑에 따라 설정문서 경로를 프롬프트에 포함
 4. **Phase 2-3 교정/검증**: 보존 가드레일, 수치 정본 우선순위를 적용
 5. **커스텀 축**: 정의되어 있으면 해당 에이전트에 추가 진단 지시
@@ -286,15 +325,15 @@ rewrite 스킬을 사용할 경우에만 작성한다. polish만 사용하면 �
 ### 대화 DNA 파일
 
 캐릭터별 대화 DNA(사고 패턴, 정보 처리, 설득 방식, 상황별 변주)를 정의한 파일 경로.
-이 파일이 없으면 캐릭터 상세 문서(character_detail)의 `## 대화 DNA` 섹션만으로 진단한다.
+이 파일이 없으면 `design_documents.dialogue_dna`, 그마저 없으면 `design_documents.character_detail`의 `## 대화 DNA` 섹션만으로 진단한다.
 
 | 문서 키 | 경로 | 용도 |
 |---------|------|------|
-| character_dialogue_dna | design/character-dialogue-dna.md | 대화 DNA — character-sculptor, episode-rewriter, episode-creator, quality-verifier 참조 |
+| rewrite.character_dialogue_dna | design/character-dialogue-dna.md | 대화 DNA — character-sculptor, episode-rewriter, episode-creator, quality-verifier 참조 |
 
 **대화 DNA 정의 위치** (우선순위순):
-1. `character_dialogue_dna` 경로에 별도 파일이 존재하면 이를 사용
-2. 별도 파일이 없으면, `character_detail` 문서 내 `## 대화 DNA` 섹션을 사용
+1. `rewrite.character_dialogue_dna` 경로에 별도 파일이 존재하면 이를 사용
+2. 없으면 `design_documents.dialogue_dna`, 그마저 없으면 `design_documents.character_detail` 문서 내 `## 대화 DNA` 섹션을 사용
 3. 둘 다 없으면: `[대화DNA미정의]` 태그를 달고, 캐릭터 보이스표만으로 진단 (정밀도 낮음 경고)
 
 **대화 DNA 섹션 필수 구조** (별도 파일이든 character_detail 내 섹션이든 동일 형식):
@@ -323,7 +362,7 @@ rewrite 스킬을 사용할 경우에만 작성한다. polish만 사용하면 �
 
 ### Rewrite 보존 가드레일
 
-polish 보존 가드레일에 추가되는 rewrite 전용 가드레일.
+`guard_rails`에 추가되는 rewrite 전용 가드레일.
 
 ```markdown
 1. 경악 방식 교체 불가 — 각 캐릭터의 고유 경악 언어를 다른 캐릭터에게 이식하지 않는다
@@ -333,5 +372,6 @@ polish 보존 가드레일에 추가되는 rewrite 전용 가드레일.
 ### Rewrite 작업 디렉토리
 
 ```yaml
-rewrite_work_dir: "revision/"  # rewrite-plan.md, rewrite-log.md 위치 (polish work_dir와 같으면 생략 가능)
+rewrite:
+  work_dir: "revision/"  # rewrite-plan.md, rewrite-log.md 위치. 없으면 project.work_dir 사용
 ```

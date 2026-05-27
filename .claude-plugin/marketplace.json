@@ -1,5 +1,6 @@
 {
   "name": "awesome-ai-studio",
+  "description": "AI 창작 워크플로우와 웹소설 제작 하네스를 제공하는 로컬 플러그인 마켓플레이스.",
   "owner": {
     "name": "MJbae"
   },

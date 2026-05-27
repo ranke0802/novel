@@ -24,6 +24,12 @@ Phase 1 (병렬)              Phase 2 (순차)          Phase 3 (순차)
 **실행 모드**: 서브 에이전트 (파이프라인 패턴, lint/revise와 동일)
 - 이유: 각 Phase가 이전 Phase 출력에 순차 의존, 에이전트 간 실시간 통신 불필요
 
+## 실행 호환성 규칙
+
+- Claude Code에서 플러그인 에이전트가 보이면 `novel-studio:{agent-name}`을 우선 호출한다.
+- 플러그인 에이전트가 보이지 않으면 `general-purpose` 서브에이전트를 호출하되, 프롬프트 첫머리에 반드시 대응하는 `agents/{agent-name}.md` 파일을 읽고 그 역할로 작업하라고 지시한다.
+- 서브에이전트 도구가 없는 환경에서는 오케스트레이터가 `agents/*.md`를 직접 읽고 같은 순서로 실행한다.
+
 ## 전제 조건
 
 1. **novel-config.md** 존재 (프로젝트 디렉토리 내)
@@ -56,10 +62,11 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
    - [ ] project.episode_dir — 에피소드 저장 디렉토리
    - [ ] project.work_dir — 작업 디렉토리
    - [ ] project.design_dir — 설계문서 디렉토리
-   - [ ] 설정문서 매핑.bootstrap — 부트스트랩 경로 (파일 존재 확인)
-   - [ ] 설정문서 매핑.character_core — 캐릭터 핵심 경로 (파일 존재 확인)
-   - [ ] 설정문서 매핑.character_detail — 캐릭터 상세 경로 (파일 존재 확인)
-   - [ ] EP 범위별 플롯 가이드 — 최소 1개 행 존재 (파일 존재 확인)
+   - [ ] design_documents.bootstrap — 부트스트랩 경로 (파일 존재 확인)
+   - [ ] design_documents.character_core — 캐릭터 핵심 경로 (파일 존재 확인)
+   - [ ] design_documents.character_detail — 캐릭터 상세 경로 (파일 존재 확인)
+   - [ ] ep_range_table — 최소 1개 행 존재
+   - [ ] ep_range_table[].plot_guide — 각 범위의 플롯 가이드 경로 (파일 존재 확인)
    ```
 
    검증 실패 시 출력:
@@ -94,10 +101,11 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
 1. novel-config.md를 파싱한다:
    ```
    {CONFIG}       ← novel-config.md 전체
-   {TARGET_PLATFORM} ← config.target_platform
-   {DESIGN_DIR}   ← config.design_dir
-   {EPISODE_DIR}  ← config.episode_dir
-   {WORK_DIR}     ← config.work_dir
+   {TARGET_PLATFORM} ← config.project.target_platform
+   {DESIGN_DIR}   ← config.project.design_dir
+   {EPISODE_DIR}  ← config.project.episode_dir
+   {WORK_DIR}     ← config.project.work_dir
+   {DESIGN_DOCS}  ← config.design_documents
    {GUARD_RAILS}  ← config.guard_rails + config.create_guard_rails (있으면)
    {CUSTOM_AXES}  ← config.custom_axes (있으면)
    {CREATE_CFG}   ← config.create 설정 (있으면, 없으면 기본값)
@@ -129,11 +137,11 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
    - novel-config.md의 `ep_range_table`에서 해당 EP가 속하는 act 확인
    - **EP 범위 중첩 검출**: ep_range_table의 모든 행을 순회하여 범위가 겹치는 행이 있는지 확인. 중첩 발견 시 경고를 출력하고 사용자에게 확인
    - 해당 act의 플롯가이드 결정:
-     - 세부 플롯 가이드 열에 경로가 있고 파일이 존재하면 → `{PLOT_DOC}` = 세부 플롯 가이드
-     - 없으면 → `{PLOT_DOC}` = 큰 설계 플롯 가이드
+     - `plot_guide_detail` 경로가 있고 파일이 존재하면 → `{PLOT_DOC}` = 세부 플롯 가이드
+     - 없으면 → `{PLOT_DOC}` = `plot_guide`
    - 해당 act의 캐릭터시트(detail) 결정:
-     - 세부 캐릭터 시트 열에 경로가 있고 파일이 존재하면 → `{CHAR_DETAIL_EP}` = 세부 캐릭터 시트
-     - 없으면 → `{CHAR_DETAIL_EP}` = 공통 character_detail
+     - 범위 행의 `character_detail` 경로가 있고 파일이 존재하면 → `{CHAR_DETAIL_EP}` = 범위 전용 캐릭터 상세 문서
+     - 없으면 → `{CHAR_DETAIL_EP}` = `design_documents.character_detail`
    - **세부 설계 문서 유무 확인**: 해당 EP 범위에 세부 플롯 가이드(작은 설계 산출물)가 없으면 경고 출력:
      ```
      ⚠️ EP{NNN}이 속하는 범위에 세부 플롯 가이드가 없습니다.
@@ -167,16 +175,17 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
 > 필요한 모든 파일 경로는 이 프롬프트에 포함되어 있다."
 
 **Agent 1: episode-architect**
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:episode-architect` (fallback: `general-purpose` + `agents/episode-architect.md`)
 - `run_in_background: true`
 - 프롬프트에 포함할 정보:
   - 에이전트 정의 파일 경로 → 읽으라고 지시
   - EP 번호
   - 읽을 설정문서 경로 (novel-config.md에 정의된 경로를 사용):
-    - 부트스트랩: `{CONFIG.bootstrap}` (novel-config.md의 bootstrap 경로)
+    - 부트스트랩: `{DESIGN_DOCS.bootstrap}` (novel-config.md의 design_documents.bootstrap 경로)
     - 플롯가이드: `{PLOT_DOC}` (Step 0.4에서 ep_range_table로 결정된 경로)
-    - 캐릭터시트 core: `{CONFIG.character_core}` (novel-config.md의 character_core 경로)
-    - 캐릭터시트 detail: `{CHAR_DETAIL_EP}` (ep_range_table 세부 캐릭터 시트 우선, 없으면 공통 character_detail)
+    - 캐릭터시트 core: `{DESIGN_DOCS.character_core}` (novel-config.md의 design_documents.character_core 경로)
+    - 캐릭터시트 detail: `{CHAR_DETAIL_EP}` (ep_range_table 범위 전용 character_detail 우선, 없으면 design_documents.character_detail)
+    - 타겟 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`
   - novel-config.md의 가드레일, 커스텀 축
   - **목표 분량 명시** (반드시 포함):
     ```
@@ -191,17 +200,18 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
     이 작업에서 Read할 수 있는 파일은 아래 목록이 전부다.
     목록에 없는 파일은 어떤 이유로든 Read하지 마라:
     0. ${CLAUDE_PLUGIN_ROOT}/agents/episode-architect.md (자신의 에이전트 정의)
-    1. {CONFIG.bootstrap}
+    1. {DESIGN_DOCS.bootstrap}
     2. {PLOT_DOC}
-    3. {CONFIG.character_core}
+    3. {DESIGN_DOCS.character_core}
     4. {CHAR_DETAIL_EP}
     5. novel-config.md
-    위 6개 파일 외의 Read 시도는 경로 제한 위반이다.
+    6. 타겟 플랫폼이 문피아일 때만 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md
+    위 목록 외의 Read 시도는 경로 제한 위반이다.
     ```
   - 출력 경로: `{WORK_DIR}/_workspace/01_episode-architect_blueprint_EP{NNN}.md`
 
 **Agent 2: continuity-bridge**
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:continuity-bridge` (fallback: `general-purpose` + `agents/continuity-bridge.md`)
 - `run_in_background: true`
 - 프롬프트에 포함할 정보:
   - 에이전트 정의 파일 경로 → 읽으라고 지시
@@ -220,17 +230,19 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
 Phase 1 완료 후 episode-creator를 실행한다.
 
 **Agent 3: episode-creator**
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:episode-creator` (fallback: `general-purpose` + `agents/episode-creator.md`)
 - 프롬프트에 포함할 정보:
   - 에이전트 정의 파일 경로 → 읽으라고 지시
   - 읽을 문서:
     - `{WORK_DIR}/_workspace/01_episode-architect_blueprint_EP{NNN}.md`
     - `{WORK_DIR}/_workspace/02_continuity-bridge_report_EP{NNN}.md`
     - 캐릭터시트 core + detail + dialogue DNA
-    - novel-config.md의 가드레일
+  - novel-config.md의 가드레일
   - `{CREATE_CFG}` 설정 (목표 글자수, 대화 비율 등)
   - 출력 경로: `{EPISODE_DIR}/ep{NNN}.md`
   - 상세 집필 원칙이 필요하면 `references/creation-principles.md`를 읽으라고 지시
+  - 장르/설정문서가 무협/강호/무림/문파/무공 계열이면 `references/wuxia-scene-style.md`도 읽고 장면·대화·무공·문체에 적용하라고 지시
+  - 타겟 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`도 읽고 3화 하이컨셉, 회차별 정산, 보상 가시화, 주변 반응, 다음 기대를 본문에 적용하라고 지시
   - **Bash 금지 지시**: "집필 완료 후 Bash/python3 스크립트를 실행하지 마라. 글자수·대화비율·장면수 집계는 quality-verifier가 수행한다. 파일 저장 후 셀프체크(있었다/고 있었다/것이었다 Grep 카운트)를 수행한 뒤 종료하라."
   - 경로 제한 지시 (Step 1의 공통 지시 포함)
 
@@ -289,7 +301,7 @@ episode-creator는 6000-10000자 초안을 작성한다. 오케스트레이터�
 ### Step 3: Phase 3 — 품질 검증 (순차)
 
 **Agent 4: quality-verifier** (CREATE 모드)
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:quality-verifier` (fallback: `general-purpose` + `agents/quality-verifier.md`)
 - 프롬프트에 포함할 정보:
   - 에이전트 정의 파일 경로 → 읽으라고 지시
   - CREATE 모드로 동작하라고 지시 (창작 품질 검증 — 아래 8축 적용):
@@ -317,6 +329,8 @@ episode-creator는 6000-10000자 초안을 작성한다. 오케스트레이터�
     - `{WORK_DIR}/_workspace/02_continuity-bridge_report_EP{NNN}.md`
     - 설정문서 (부트스트랩, 캐릭터시트, 플롯가이드)
     - novel-config.md (가드레일, 수치 검증 우선순위, 커스텀 축)
+    - 장르/설정문서가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/polish/references/wuxia-quality-checklist.md`
+    - 타겟 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`
   - 출력 경로: `{WORK_DIR}/_workspace/04_quality-verifier_verdict_EP{NNN}.md`
 
 ### Step 4: 판정 분기

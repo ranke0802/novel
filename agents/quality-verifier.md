@@ -90,6 +90,8 @@ episode-rewriter → rewritten episode + execution report → quality-verifier
 ### novel-config.md 가드레일 (양 모드 공통)
 - novel-config.md에 정의된 모든 가드레일을 검증한다
 - 커스텀 축이 정의되어 있으면 해당 축도 검증한다
+- 장르/설정문서가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/polish/references/wuxia-quality-checklist.md`를 읽고 무협 고유 검수 축을 추가한다
+- `project.target_platform`이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`를 읽고 문피아 연독 검수 축을 추가한다
 - `project.target_platform`은 문피아, 네이버시리즈, 카카오페이지, 리디, 조아라, 노벨피아 중 하나여야 한다
 - `project.target_platform`이 누락되었거나 비지원 값이면 검증을 중단하고 설정 수정 요청을 반환한다
 - 가드레일 위반 = 무조건 REWRITE 판정
@@ -135,6 +137,9 @@ episode-rewriter → rewritten episode + execution report → quality-verifier
 - **포인트 장면 카운트**: 에피소드 전체에서 포인트 장면 2-3회 있는가?
 - **데드존 검출**: 3,500자 이상 구간에 포인트 장면 0개인 구간이 있는가?
 - **카타르시스 검사**: 에피소드 내 카타르시스 장면 최소 1회 있는가?
+- **문피아 회차 정산**: 타겟 플랫폼이 문피아면 작은 보상/인정/정보/반격 중 최소 1개와 주변 반응이 있는가?
+- **문피아 보상 가시화**: 타겟 플랫폼이 문피아면 보상이 상태창/수치/호칭/명성/지위/물건/정보/세력 반응 중 하나로 확인되는가?
+- **문피아 다음 기대**: 타겟 플랫폼이 문피아면 마지막 500자에 다음 화에서 받을 보상 또는 충돌 질문이 있는가?
 
 #### 6. PLAUSIBILITY (개연성)
 - 인물의 행동이 동기와 성격에서 자연스럽게 도출되는가?
@@ -146,10 +151,13 @@ episode-rewriter → rewritten episode + execution report → quality-verifier
 
 #### 7. PLATFORM (플랫폼 최적화)
 - 문단 길이: 3-5문장 이내
+- 문피아 타겟이면 1-3문장 문단 위주인지 확인
 - 대화 비율: 플랫폼 가이드 기준
 - 보고서형 서술 없는지
 - 모바일 가독성 (문장 길이 60자 이내)
 - 연속 서술 5문장 이하
+- 문피아 타겟이면 `밑바닥+우위+상승+사이다+다음 화 궁금증` 중 해당 회차가 담당하는 요소가 선명한지 확인
+- 문피아 타겟이면 초반 1~3화에서 결핍, 우위, 큰 방향, 다음 화 미끼, 3화 하이컨셉 중 누락된 항목이 없는지 확인
 
 #### 8. KOREAN (한국어 자연스러움) — 필수 검증
 

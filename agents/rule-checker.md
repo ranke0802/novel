@@ -25,6 +25,7 @@ description: "웹소설 규칙 검증 전문가. 금지표현, 캐릭터 보이�
    - **캐릭터 상세 문서** (character_detail) — 보이스표(종결어미·평균 길이·특징), 호칭 규칙표(화자×청자 매트릭스), 경악 변주표
    - **캐릭터 핵심 문서** (character_core) — 주인공 감정 표현 규칙(크랙 문법 등), 페르소나(표면/심층)
 3. `${CLAUDE_PLUGIN_ROOT}/skills/polish/references/12-axes.md` 축1~5의 탐지 키워드와 등급 기준
+4. 장르/설정문서가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/polish/references/wuxia-quality-checklist.md`의 문체·대사·호칭·침묵 기준
 
 ### Step 2: 에피소드 전문 정독 + grep 검증
 

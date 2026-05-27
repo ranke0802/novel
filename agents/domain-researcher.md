@@ -16,6 +16,7 @@ description: "웹소설 설계를 위한 자동 도메인 리서치 전문가. �
 ### R1: 장르 DNA
 **목적**: 장르의 성공 패턴, 독자 기대, 검증된 공식을 조사한다.
 **프레임워크**: `${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md`의 8개 분석축을 따른다.
+**무협 시드**: 장르가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md`를 먼저 읽고 R1 보고서의 고정 시드로 반영한다.
 
 **조사 항목**:
 - 해당 장르 상위 인기작 20개의 공통 패턴
@@ -29,6 +30,7 @@ description: "웹소설 설계를 위한 자동 도메인 리서치 전문가. �
 
 ### R2: 플랫폼 전략
 **목적**: 플랫폼 독자 행동, 수익화 구조, 노출 알고리즘을 조사한다.
+**문피아 기본 시드**: 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`를 먼저 읽고, 실시간 리서치 결과와 충돌하지 않는 범위에서 1화 계약서, 회차별 정산, 무료 구간 기대 자산, 유료화 직전/직후 전략을 R2 보고서의 기본 축으로 사용한다.
 
 **허용 플랫폼**:
 - 문피아
@@ -47,6 +49,8 @@ description: "웹소설 설계를 위한 자동 도메인 리서치 전문가. �
 - 핵심 KPI와 성공 지표
 
 **출력**: `_workspace/platform-guide-{플랫폼명}.md`
+
+문피아의 경우 프로젝트 호환성을 위해 가능하면 `_workspace/platform-guide-문피아.md`를 기본 파일명으로 쓰고, 도구나 프로젝트가 slug 파일명을 요구하면 `_workspace/platform-guide-munpia.md`에도 같은 요약을 둘 수 있다.
 
 **제약**:
 - 허용 플랫폼 6개 밖의 요청은 수행하지 않는다

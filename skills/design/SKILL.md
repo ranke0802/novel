@@ -63,3 +63,7 @@ description: "웹소설의 통합 설계 라우터. 큰 설계와 작은 설계�
 ## 공유 레퍼런스
 
 `references/genre-dna-framework.md`는 이 라우터 하위에 위치하며, design-big과 design-small에서 공용으로 참조한다.
+
+무협 장르(`무협`, `강호`, `무림`, `문파`, `무공`, `정파/사파/마교`)가 감지되면 `references/wuxia-genre-seed.md`도 함께 참조하도록 design-big/design-small에 전달한다.
+
+타겟 플랫폼이 `문피아`이면 `references/munpia-platform-seed.md`도 함께 참조하도록 design-big/design-small에 전달한다.

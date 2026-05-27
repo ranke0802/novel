@@ -13,6 +13,14 @@ description: "웹소설 윤문 스킬. 6명의 전문 에이전트를 병렬/순
 
 ---
 
+## 실행 호환성 규칙
+
+- Claude Code에서 플러그인 에이전트가 보이면 `novel-studio:{agent-name}`을 우선 호출한다.
+- 플러그인 에이전트가 보이지 않으면 `general-purpose` 서브에이전트를 호출하되, 프롬프트 첫머리에 반드시 대응하는 `agents/{agent-name}.md` 파일을 읽고 그 역할로 작업하라고 지시한다.
+- 서브에이전트 도구가 없는 환경에서는 오케스트레이터가 `agents/*.md`를 직접 읽고 같은 순서로 실행한다.
+
+---
+
 ## 팀 구성
 
 ```
@@ -100,10 +108,11 @@ LOOP:
      - [ ] project.target_platform — 플랫폼명
      - [ ] project.episode_dir — 에피소드 저장 디렉토리
      - [ ] project.work_dir — 작업 디렉토리
-     - [ ] 설정문서 매핑.bootstrap — 부트스트랩 경로 (파일 존재 확인)
-     - [ ] 설정문서 매핑.character_core — 캐릭터 핵심 경로 (파일 존재 확인)
-     - [ ] 설정문서 매핑.character_detail — 캐릭터 상세 경로 (파일 존재 확인)
-     - [ ] EP 범위별 플롯 가이드 — 최소 1개 행 존재 (파일 존재 확인)
+     - [ ] design_documents.bootstrap — 부트스트랩 경로 (파일 존재 확인)
+     - [ ] design_documents.character_core — 캐릭터 핵심 경로 (파일 존재 확인)
+     - [ ] design_documents.character_detail — 캐릭터 상세 경로 (파일 존재 확인)
+     - [ ] ep_range_table — 최소 1개 행 존재
+     - [ ] ep_range_table[].plot_guide — 각 범위의 플롯 가이드 경로 (파일 존재 확인)
      ```
      검증 실패 시:
      ```
@@ -123,6 +132,8 @@ LOOP:
    - 보존 가드레일 추출
    - 커스텀 축 존재 여부 확인
    - 침묵 패턴 예외 캐릭터 확인
+   - 장르/설정문서가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/polish/references/wuxia-quality-checklist.md`를 커스텀 검수 축으로 추가한다
+   - `project.target_platform`이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`를 플랫폼 최적화 기준으로 추가한다
 
 3. 작업 디렉토리 설정
    - novel-config.md의 work_dir에서 fix_plan.md 읽기
@@ -139,20 +150,20 @@ LOOP:
 ### Step 0.5: EP 범위별 설정문서 결정 (매 에피소드)
 
 대상 에피소드 번호에 따라 참조할 설정문서를 결정한다.
-novel-config.md의 **"EP 범위별 설정문서"** 테이블에서 해당 EP의 플롯 문서와 캐릭터 시트를 선택.
+novel-config.md의 `ep_range_table`에서 해당 EP의 플롯 문서와 캐릭터 시트를 선택.
 
 ```
-{PLOT_DOC} = novel-config.md의 EP 범위 매핑에서 해당 EP에 맞는 플롯 가이드 경로
-             세부 플롯 가이드 열에 경로가 있고 파일이 존재하면 세부 가이드 우선
+{PLOT_DOC} = novel-config.md의 ep_range_table에서 해당 EP에 맞는 플롯 가이드 경로
+             plot_guide_detail 경로가 있고 파일이 존재하면 세부 가이드 우선
              (범위 중첩 발견 시 경고 출력 후 첫 번째 매칭 행 사용)
-{CHAR_CORE} = novel-config.md의 공통 문서 중 character_core 경로
-{CHAR_DETAIL} = EP 범위별 설정문서 테이블의 세부 캐릭터 시트 열에 경로가 있고 파일이 존재하면
-                세부 캐릭터 시트 우선, 없으면 공통 문서의 character_detail 경로
-{BOOTSTRAP} = novel-config.md의 공통 문서 중 bootstrap 경로
-{GUIDE} = novel-config.md의 보조 참조 중 web_novel_guide 경로
-{VERIFY} = novel-config.md의 보조 참조 중 verification 경로
-{PLOT_MACRO} = novel-config.md의 보조 참조 중 plot_macro 경로
-{EPISODE_DIR} = novel-config.md의 episode_dir 경로
+{CHAR_CORE} = design_documents.character_core
+{CHAR_DETAIL} = ep_range_table[].character_detail 경로가 있고 파일이 존재하면 범위 전용 문서 우선,
+                없으면 design_documents.character_detail
+{BOOTSTRAP} = design_documents.bootstrap
+{GUIDE} = design_documents.web_novel_guide
+{VERIFY} = design_documents.verification
+{PLOT_MACRO} = design_documents.plot_macro
+{EPISODE_DIR} = project.episode_dir
 {GUARD_RAILS} = novel-config.md의 보존 가드레일 목록
 {CUSTOM_AXES} = novel-config.md의 커스텀 진단 축 섹션 (있을 경우)
 {SILENCE_EXCEPT} = novel-config.md의 침묵 패턴 예외 캐릭터 (있을 경우)
@@ -291,9 +302,10 @@ Agent("platform-optimizer"):
            - {GUIDE} — 모바일 최적화 원칙 (있을 경우)
 
            ★ 플랫폼별 기준:
-           - novel-config.md의 target_platform은 문피아, 네이버시리즈, 카카오페이지, 리디, 조아라, 노벨피아 중 하나여야 함
-           - novel-config.md의 target_platform에 해당하는 플랫폼 가이드 참조
+           - novel-config.md의 project.target_platform은 문피아, 네이버시리즈, 카카오페이지, 리디, 조아라, 노벨피아 중 하나여야 함
+           - novel-config.md의 project.target_platform에 해당하는 플랫폼 가이드 참조
            - _workspace/platform-guide-{platform}.md가 있으면 해당 파일의 기준 적용
+           - target_platform이 문피아이고 프로젝트 플랫폼 가이드가 없으면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md 기준 적용
 
            에이전트 정의(platform-optimizer.md)의 축별 체크리스트를 따라
            ${CLAUDE_PLUGIN_ROOT}/skills/polish/references/12-axes.md 축8·10·11·12 참조하여 진단.

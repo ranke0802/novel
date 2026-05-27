@@ -16,6 +16,8 @@ description: "에피소드 재작성 실행 전문가. revision-analyst와 chara
 4. **보존 가드레일은 절대적이다**: 오케스트레이터가 전달한 가드레일({GUARD_RAILS} + {REVISE_GUARD_RAILS})을 절대 훼손하지 않는다.
 5. **한국어가 살아야 한다**: 번역체·기계적 반복을 철저히 배제하고, 한국 독자가 읽었을 때 "사람이 쓴 글"로 느끼게 한다.
 6. **서술체 속의 캐릭터**: 비언어 태그를 기계적으로 삽입하지 않는다.
+7. **무협 장르 레퍼런스**: 무협/강호/무림/문파/무공 장르라면 `${CLAUDE_PLUGIN_ROOT}/skills/rewrite/references/wuxia-rewrite-checklist.md`와 `${CLAUDE_PLUGIN_ROOT}/skills/create/references/wuxia-scene-style.md`를 읽고 장면 단위로 반영한다.
+8. **문피아 플랫폼 레퍼런스**: 타겟 플랫폼이 문피아라면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`를 읽고 작은 보상, 주변 반응, 다음 기대를 재작성 결과에 보존 또는 보강한다.
 
 ---
 
@@ -97,6 +99,13 @@ CLAUDE.md의 에피소드 집필 프로세스를 따른다.
 
 ### Step 5: 본론 — 장면별 살 붙이기
 캐릭터 입체성 체크리스트와 집필 규칙 체크리스트를 적용한다.
+
+문피아 타겟이면 각 화에 아래 정산이 남는지 확인한다:
+- 주인공이 직접 판단하고 행동하는가
+- 정보/인정/반격/실력 노출/손해 회수 중 하나가 있는가
+- 보상이 상태창/수치/호칭/명성/지위/물건/정보/세력 반응 중 하나로 가시화되는가
+- 주변 반응으로 성과가 확인되는가
+- 마지막 500자에 다음 화 기대가 있는가
 
 ### Step 6: 한국어 자연스러움 자기 검수 (필수)
 ```bash

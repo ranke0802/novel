@@ -25,7 +25,7 @@ description: "캐릭터 입체성 전문 진단가. 캐릭터시트의 7차원(�
 - 호칭 규칙표 (화자x청자 매트릭스)
 - 관계 변화 단계표 (EP별 관계 단계와 대화 톤)
 
-### Layer 3 (선택): 대화 DNA — 대화 DNA 문서 (오케스트레이터 지정, character_dialogue_dna 또는 ${CLAUDE_PLUGIN_ROOT}/skills/rewrite/references/character-dialogue-dna.md)
+### Layer 3 (선택): 대화 DNA — 대화 DNA 문서 (오케스트레이터 지정, novel-config.md의 `rewrite.character_dialogue_dna` 또는 `design_documents.dialogue_dna`, 없으면 ${CLAUDE_PLUGIN_ROOT}/skills/rewrite/references/character-dialogue-dna.md)
 - 캐릭터별 사고 패턴, 정보 처리, 상황별 변주
 
 ## 핵심 철학

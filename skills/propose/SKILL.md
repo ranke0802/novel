@@ -9,6 +9,12 @@ description: "타겟 장르, 컨셉, 타겟 플랫폼을 입력하면 3개의 �
 
 ## 실행 모드: 서브에이전트
 
+## 실행 호환성 규칙
+
+- Claude Code에서 플러그인 에이전트가 보이면 `novel-studio:domain-researcher`, `novel-studio:proposal-generator`를 우선 호출한다.
+- 해당 에이전트가 보이지 않으면 `general-purpose` 서브에이전트를 호출하되, 프롬프트 첫머리에 반드시 대응하는 `agents/*.md` 파일을 읽고 그 역할로 작업하라고 지시한다.
+- 서브에이전트 도구가 없는 환경에서는 오케스트레이터가 같은 순서를 로컬로 수행한다.
+
 ## 워크플로우
 
 ### Phase 1: 입력 파싱
@@ -71,7 +77,7 @@ description: "타겟 장르, 컨셉, 타겟 플랫폼을 입력하면 3개의 �
 domain-researcher 서브에이전트를 호출하여 자동 리서치를 수행한다. 사용자 대기 없이 즉시 진행한다.
 
 **서브에이전트: domain-researcher**
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:domain-researcher` (fallback: `general-purpose` + `agents/domain-researcher.md`)
 - 리서치 항목:
   - **R1 장르 DNA**: 해당 장르의 필수 공식, 독자 기대, 성공 패턴 분석
   - **R2 플랫폼 전략**: 타겟 플랫폼의 유료 전환 구조, 독자 성향, 인기작 패턴
@@ -86,6 +92,8 @@ domain-researcher 서브에이전트를 호출하여 자동 리서치를 수행�
    - 장르: {장르}
    - 분석 항목: 필수 서사 공식, 독자 기대 패턴, 성공작의 공통 요소, 차별화 가능 지점
    - `${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md`를 읽고 프레임워크 숙지
+   - 장르가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md`를 장르 시드로 함께 반영
+   - 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`를 읽고 제목/로그라인, 1화 계약서, 무료 구간 기대 자산, 연독 보상 구조를 R2 플랫폼 전략에 반영
 
 2. R2 플랫폼 전략 분석:
    - 플랫폼: {플랫폼}
@@ -107,7 +115,7 @@ domain-researcher 서브에이전트를 호출하여 자동 리서치를 수행�
 proposal-generator 서브에이전트를 호출하여 3개의 차별화된 설계안을 생성한다.
 
 **서브에이전트: proposal-generator**
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:proposal-generator` (fallback: `general-purpose` + `agents/proposal-generator.md`)
 - 프롬프트:
 ```
 당신은 proposal-generator 서브에이전트입니다.
@@ -117,6 +125,8 @@ proposal-generator 서브에이전트를 호출하여 3개의 차별화된 설�
 - _workspace/00_research/R1_장르DNA.md
 - _workspace/00_research/R2_플랫폼전략.md
 - _workspace/00_research/R5_기존작분석.md
+- 장르가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md`
+- 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`
 
 사용자 입력:
 - 장르: {장르}
@@ -125,6 +135,7 @@ proposal-generator 서브에이전트를 호출하여 3개의 차별화된 설�
 
 `${CLAUDE_PLUGIN_ROOT}/agents/proposal-generator.md`에 정의된 출력 구조와 작업 원칙에 따라 3개의 차별화된 웹소설 설계안을 작성하세요.
 R5 기존작 분석 결과를 반드시 참조하여 기존작과의 차별화를 명시하세요.
+플랫폼이 문피아면 각 기획안에 `밑바닥+우위+상승+사이다+다음 화 궁금증`이 보이는지, 1화 계약서가 성립하는지, 유료화 전 기대 자산이 쌓이는지 명시하세요.
 
 출력: _workspace/01_proposals.md
 ```

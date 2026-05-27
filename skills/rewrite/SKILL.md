@@ -14,6 +14,14 @@ description: "에피소드 재작성(rewrite) 스킬. 설정문서(캐릭터시�
 
 ---
 
+## 실행 호환성 규칙
+
+- Claude Code에서 플러그인 에이전트가 보이면 `novel-studio:{agent-name}`을 우선 호출한다.
+- 플러그인 에이전트가 보이지 않으면 `general-purpose` 서브에이전트를 호출하되, 프롬프트 첫머리에 반드시 대응하는 `agents/{agent-name}.md` 파일을 읽고 그 역할로 작업하라고 지시한다.
+- 서브에이전트 도구가 없는 환경에서는 오케스트레이터가 `agents/*.md`를 직접 읽고 같은 순서로 실행한다.
+
+---
+
 ## 팀 구조: 생성-검증(Producer-Reviewer) 패턴
 
 ```
@@ -165,10 +173,11 @@ LOOP:
      - [ ] project.target_platform — 플랫폼명
      - [ ] project.episode_dir — 에피소드 저장 디렉토리
      - [ ] project.design_dir — 설계문서 디렉토리 (설정문서 변경 감지에 필요)
-     - [ ] 설정문서 매핑.bootstrap — 부트스트랩 경로 (파일 존재 확인)
-     - [ ] 설정문서 매핑.character_core — 캐릭터 핵심 경로 (파일 존재 확인)
-     - [ ] 설정문서 매핑.character_detail — 캐릭터 상세 경로 (파일 존재 확인)
-     - [ ] EP 범위별 플롯 가이드 — 최소 1개 행 존재 (파일 존재 확인)
+     - [ ] design_documents.bootstrap — 부트스트랩 경로 (파일 존재 확인)
+     - [ ] design_documents.character_core — 캐릭터 핵심 경로 (파일 존재 확인)
+     - [ ] design_documents.character_detail — 캐릭터 상세 경로 (파일 존재 확인)
+     - [ ] ep_range_table — 최소 1개 행 존재
+     - [ ] ep_range_table[].plot_guide — 각 범위의 플롯 가이드 경로 (파일 존재 확인)
      ```
      검증 실패 시:
      ```
@@ -187,17 +196,17 @@ LOOP:
    - 설정문서 경로 매핑 추출 → {CONFIG} 변수로 저장
    - 보존 가드레일 추출 → {GUARD_RAILS}
    - Rewrite 전용 설정 추출:
-     - character_dialogue_dna 경로 → {DIALOGUE_DNA} (없으면 character_detail로 대체)
-     - Rewrite 보존 가드레일 → {REWRITE_GUARD_RAILS} (polish 가드레일에 추가)
-     - rewrite_work_dir → {REWRITE_WORK_DIR} (없으면 work_dir 사용)
+     - rewrite.character_dialogue_dna 경로 → {DIALOGUE_DNA} (없으면 design_documents.dialogue_dna, 없으면 character_detail로 대체)
+     - rewrite.guard_rails → {REWRITE_GUARD_RAILS} (polish 가드레일에 추가)
+     - rewrite.work_dir → {REWRITE_WORK_DIR} (없으면 project.work_dir 사용)
    - 커스텀 축 존재 여부 확인 → {CUSTOM_AXES}
 
 3. 필수 문서 로드:
-   - {WRITING_RULES} — 집필 규칙 바이블 (novel-config.md의 writing_rules, 기본값: CLAUDE.md)
-   - {CHAR_CORE} — 캐릭터 핵심 문서 (novel-config.md의 character_core)
-   - {CHAR_DETAIL} — 캐릭터 상세 문서 (novel-config.md의 character_detail)
-   - {PLOT_MACRO} — 전체 플롯 구조 (novel-config.md의 plot_macro)
-   - {BOOTSTRAP} — 세계관·기술·경제 규칙 (novel-config.md의 bootstrap)
+   - {WRITING_RULES} — 집필 규칙 바이블 (design_documents.writing_rules, 기본값: CLAUDE.md)
+   - {CHAR_CORE} — 캐릭터 핵심 문서 (design_documents.character_core)
+   - {CHAR_DETAIL} — 캐릭터 상세 문서 (design_documents.character_detail)
+   - {PLOT_MACRO} — 전체 플롯 구조 (design_documents.plot_macro)
+   - {BOOTSTRAP} — 세계관·기술·경제 규칙 (design_documents.bootstrap)
 
 4. 작업 디렉토리 설정
    - {REWRITE_WORK_DIR}에서 rewrite-plan.md 읽기 또는 생성
@@ -213,21 +222,22 @@ LOOP:
 ### Step 0.5: EP 범위별 설정문서 결정 (매 에피소드)
 
 대상 에피소드 번호에 따라 참조할 설정문서를 결정한다.
-novel-config.md의 **"EP 범위별 설정문서"** 테이블에서 해당 EP의 플롯 문서와 캐릭터 시트를 선택.
+novel-config.md의 `ep_range_table`에서 해당 EP의 플롯 문서와 캐릭터 시트를 선택.
 
 ```
-{PLOT_DOC} = novel-config.md의 EP 범위 매핑에서 해당 EP에 맞는 플롯 가이드 경로
-             세부 플롯 가이드 열에 경로가 있고 파일이 존재하면 세부 가이드 우선
-{CHAR_CORE} = novel-config.md의 공통 문서 중 character_core 경로
-{CHAR_DETAIL} = EP 범위별 설정문서 테이블의 세부 캐릭터 시트 열에 경로가 있고 파일이 존재하면
-                세부 캐릭터 시트 우선, 없으면 공통 문서의 character_detail 경로
-{BOOTSTRAP} = novel-config.md의 공통 문서 중 bootstrap 경로
-{VERIFY} = novel-config.md의 보조 참조 중 verification 경로 (있을 경우)
-{DIALOGUE_DNA} = novel-config.md의 Rewrite 전용 설정 중 character_dialogue_dna 경로 (없으면 {CHAR_DETAIL})
-{WRITING_RULES} = novel-config.md의 writing_rules 경로 (기본값: CLAUDE.md)
-{EPISODE_DIR} = novel-config.md의 episode_dir 경로
+{PLOT_DOC} = ep_range_table에서 해당 EP에 맞는 plot_guide 경로
+             plot_guide_detail 경로가 있고 파일이 존재하면 세부 가이드 우선
+{CHAR_CORE} = design_documents.character_core
+{CHAR_DETAIL} = ep_range_table[].character_detail 경로가 있고 파일이 존재하면 범위 전용 문서 우선,
+                없으면 design_documents.character_detail
+{BOOTSTRAP} = design_documents.bootstrap
+{VERIFY} = design_documents.verification (있을 경우)
+{DIALOGUE_DNA} = rewrite.character_dialogue_dna 경로
+                 없으면 design_documents.dialogue_dna, 없으면 {CHAR_DETAIL}
+{WRITING_RULES} = design_documents.writing_rules (기본값: CLAUDE.md)
+{EPISODE_DIR} = project.episode_dir
 {GUARD_RAILS} = novel-config.md의 보존 가드레일 목록
-{REWRITE_GUARD_RAILS} = novel-config.md의 Rewrite 보존 가드레일 (있을 경우)
+{REWRITE_GUARD_RAILS} = rewrite.guard_rails (있을 경우)
 {CUSTOM_AXES} = novel-config.md의 커스텀 진단 축 섹션 (있을 경우)
 ```
 
@@ -285,7 +295,7 @@ Agent("character-sculptor"):
 
            출력 경로: {REWRITE_WORK_DIR}/_workspace/06_character-sculptor_report_EP{NNN}.md
 
-           ★ 강화된 진단 기준 (7개 차원):
+           ★ 강화된 진단 기준 (8개 차원):
            1. 비언어가 서술 흐름에 녹아있는가? (태그 직결 vs 인과순서)
            2. 비언어 강도가 사건의 무게에 비례하는가? (5단계: 미약~압도)
            3. 화 내 동일 비언어 2회 초과 여부
@@ -295,7 +305,7 @@ Agent("character-sculptor"):
            7. 대화 톤이 캐릭터 아크 단계에 맞는가
            8. 조연 대사에 개인적 맥락(경험·기억·이해관계)이 실려있는가
 
-           ★ 대화 DNA 진단 (⑦번 차원):
+           ★ 대화 DNA 진단 (7~8번 차원):
            9. 대사의 사고 패턴이 캐릭터 DNA와 정합하는가?
            10. 같은 캐릭터의 같은 사고경로가 화당 3회 이상 반복되지 않는가?
            11. 대사의 화자를 다른 캐릭터로 교체했을 때 어색한가? (교체 불가성)
@@ -324,6 +334,9 @@ Agent("episode-rewriter"):
            - {BOOTSTRAP} (세계관)
            - {REWRITE_WORK_DIR}/alive-tracker.md (관계 아크 현황)
            - {DIALOGUE_DNA} (대화 DNA 가이드)
+           - 무협/강호/무림/문파/무공 장르라면 ${CLAUDE_PLUGIN_ROOT}/skills/rewrite/references/wuxia-rewrite-checklist.md
+             및 ${CLAUDE_PLUGIN_ROOT}/skills/create/references/wuxia-scene-style.md
+           - 타겟 플랫폼이 문피아라면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md
 
            ★ Phase 1 분석 보고서 (파일로 읽기):
            - {REWRITE_WORK_DIR}/_workspace/06_character-sculptor_report_EP{NNN}.md
@@ -341,6 +354,8 @@ Agent("episode-rewriter"):
            4. 조연 대사에 개인적 맥락(경험·기억·이해관계) 1줄 이상.
            5. 3명+ 동시 반응 시 최소 1명은 다른 감정으로 반응.
            6. 대화 톤을 캐릭터 아크 단계에 맞춘다 (alive-tracker 참조).
+           6-1. 무협 장르라면 한/정/협, 명분과 체면, 성장의 대가, 무공의 몸의 언어를 장면 단위로 복원한다.
+           6-2. 문피아 타겟이라면 회차별 작은 보상, 보상 가시화, 주변 반응, 다음 기대를 훼손하지 말고 약한 경우 보강한다.
 
            ★ 대화 DNA 원칙 (필수 준수 — {DIALOGUE_DNA} 참조):
            7. 대사 작성 3단계: ①누구의 DNA인가 → ②어떤 상황 유형인가 → ③교체 불가 검증.
@@ -371,11 +386,13 @@ Agent("quality-verifier"):
            - {PLOT_DOC} (해당 EP 비트·확정 수치)
            - {CHAR_CORE} (캐릭터 핵심)
            - {CHAR_DETAIL} (보이스표·비언어·경악·관계 변화표)
+           - 무협/강호/무림/문파/무공 장르라면 ${CLAUDE_PLUGIN_ROOT}/skills/polish/references/wuxia-quality-checklist.md
+           - 타겟 플랫폼이 문피아라면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md
 
            [Rewrite Execution Report]
            {episode-rewriter 출력}
 
-           7개 카테고리 QA 실행:
+           8개 카테고리 QA 실행:
            1. ★수치일관성 (3단계 교차검증): 모든 시간 마커 추출 → 상대시간을 절대날짜로 변환
               → 인접 EP와 같은 사건의 시간 참조 대조 → 모든 수치 인접 EP 대조
               → EP 내 산술 검증. [TIMELINE]/[NUMBER] 태그 잔존 시 FAIL.
@@ -384,7 +401,8 @@ Agent("quality-verifier"):
            4. 문체/금지표현
            5. 개연성
            6. 훅/페이싱
-           7. ★커스텀 축 정합성 — novel-config.md에 정의된 커스텀 축 최종 확인
+           7. 문피아 연독 정산 — 문피아 타겟이면 작은 보상/보상 가시화/주변 반응/다음 기대 확인
+           8. ★커스텀 축 정합성 — novel-config.md에 정의된 커스텀 축 최종 확인
 
            ★ 보존 가드레일 확인:
            {GUARD_RAILS}
@@ -496,7 +514,7 @@ Rewrite 전용 가드레일 (novel-config.md의 "Rewrite 보존 가드레일" �
 ### rewrite → polish 재실행 권장
 
 rewrite 완료 후, 재작성된 에피소드는 **12축 윤문(polish)을 거치지 않은 상태**다.
-rewrite의 quality-verifier는 6카테고리 QA만 수행하므로, polish의 12축+ALIVE 4축 진단과 범위가 다르다.
+rewrite의 quality-verifier는 8카테고리 QA만 수행하므로, polish의 12축+ALIVE 4축 진단과 범위가 다르다.
 
 **REWRITE_COMPLETE 출력 후 다음 안내를 반드시 포함한다:**
 
@@ -528,7 +546,7 @@ rewrite의 quality-verifier는 6카테고리 QA만 수행하므로, polish의 12
 
 비언어가 **몸**의 팔레트라면, 대화 DNA는 **말**의 팔레트다.
 상세 가이드: `${CLAUDE_PLUGIN_ROOT}/skills/rewrite/references/character-dialogue-dna.md` (방법론)
-캐릭터별 DNA 프로필: novel-config.md의 `character_dialogue_dna` 경로 (프로젝트 데이터)
+캐릭터별 DNA 프로필: novel-config.md의 `rewrite.character_dialogue_dna` 또는 `design_documents.dialogue_dna` 경로 (프로젝트 데이터)
 
 ### 대사 작성 3단계
 1. **누가 말하는가** — 캐릭터 DNA 확인. 이 사람은 정보를 어떻게 처리하나?

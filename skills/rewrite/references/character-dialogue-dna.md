@@ -24,7 +24,7 @@ episode-rewriter는 대사를 쓸 때 이 문서를 참조하고, character-scul
 
 ## 2. 캐릭터별 대화 DNA 프로필
 
-캐릭터별 대화 DNA 프로필은 novel-config.md에서 지정된 `character_dialogue_dna` 파일에서 로드한다.
+캐릭터별 대화 DNA 프로필은 novel-config.md에서 지정된 `rewrite.character_dialogue_dna` 파일에서 로드한다. 없으면 `design_documents.dialogue_dna`, 그마저 없으면 `design_documents.character_detail`의 대화 DNA 섹션을 사용한다.
 해당 파일이 없으면 캐릭터 상세 문서(character_detail)의 캐릭터 프로필을 참조한다.
 
 ### 대화 DNA 프로필 작성 템플릿
@@ -68,7 +68,7 @@ episode-rewriter는 대사를 쓸 때 이 문서를 참조하고, character-scul
 
 같은 사건에 여러 캐릭터가 동시에 반응할 때, **전원 동일 반응 금지** 원칙을 적용하기 위한 매트릭스.
 
-프로젝트별 character_dialogue_dna 파일에 캐릭터별 반응 매트릭스를 정의한다.
+프로젝트별 `rewrite.character_dialogue_dna` 파일에 캐릭터별 반응 매트릭스를 정의한다.
 
 **작성 원칙**: 3명 이상 동시 반응 시, 매트릭스에서 **다른 열**의 반응을 선택한다.
 놀라움만 3명 --> 놀라움 + 검산 + 보류 등으로 분화한다.
@@ -150,7 +150,7 @@ episode-rewriter는 대사를 쓸 때 이 문서를 참조하고, character-scul
 
 | 항목 | 기준 | 방법 |
 |------|------|------|
-| DNA 정합 | 캐릭터의 사고 패턴이 대사에 반영되는가? | character_dialogue_dna 파일의 대사 DNA와 대조 |
+| DNA 정합 | 캐릭터의 사고 패턴이 대사에 반영되는가? | rewrite.character_dialogue_dna 또는 design_documents.dialogue_dna 파일의 대사 DNA와 대조 |
 | 상황 감응 | 상황 유형에 따라 대사 경로가 달라지는가? | 반응 매트릭스와 대조 |
 | 화 내 변주 | 같은 사고 경로가 3회 이상 반복되지 않는가? | §4-1 |
 | 화 간 변주 | 직전 2화와 같은 사고 경로가 3화 연속이 아닌가? | §4-3 |

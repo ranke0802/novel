@@ -9,6 +9,13 @@ description: "웹소설의 작은 설계(25화 단위 세부 설계)를 수행�
 
 ## 실행 모드: 에이전트 팀
 
+## 실행 호환성 규칙
+
+- 아래 `TeamCreate`, `TaskCreate`, `SendMessage`, `TeamDelete` 블록은 오케스트레이션 명세다. 해당 도구가 없는 환경에서는 문자 그대로 호출하지 말고 의존 순서대로 로컬 실행한다.
+- Claude Code에서 플러그인 에이전트가 보이면 `novel-studio:{agent-name}`을 우선 호출한다.
+- 플러그인 에이전트가 보이지 않으면 `general-purpose` 서브에이전트를 호출하되, 프롬프트 첫머리에 반드시 대응하는 `agents/{agent-name}.md` 파일을 읽고 그 역할로 작업하라고 지시한다.
+- 서브에이전트 도구가 없는 환경에서는 오케스트레이터가 `agents/*.md`와 해당 `skills/*/SKILL.md`를 직접 읽고 순차 실행한다.
+
 ## 에이전트 구성
 
 | 팀원 | 에이전트 파일 | 역할 | 스킬 | 출력 |
@@ -28,6 +35,8 @@ description: "웹소설의 작은 설계(25화 단위 세부 설계)를 수행�
 ## 공유 레퍼런스
 
 - **genre-dna-framework.md 위치**: `${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md` (라우터 하위 — big/small 공용)
+- **wuxia-genre-seed.md 위치**: `${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md` (무협/강호/무림/문파/무공 장르일 때 적용)
+- **munpia-platform-seed.md 위치**: `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md` (타겟 플랫폼이 문피아일 때 적용)
 
 ## 권한 안내
 
@@ -57,7 +66,7 @@ description: "웹소설의 작은 설계(25화 단위 세부 설계)를 수행�
 > domain-researcher 서브에이전트를 호출하여 해당 아크의 세부 리서치를 자동 수행한다. 사용자 대기 없이 즉시 진행한다.
 
 **서브에이전트: domain-researcher**
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:domain-researcher` (fallback: `general-purpose` + `agents/domain-researcher.md`)
 - 리서치 항목:
   - **R7 전문 기술/지식 디테일**: 해당 아크에서 활용되는 구체적 전문 지식, 기술, 장면 디테일
   - **R8 사건 상세 타임라인**: 해당 아크 시간대의 실제 사건 상세 (날짜, 인물, 결과, 파급 효과)
@@ -117,11 +126,13 @@ TeamCreate(
   members: [
     {
       name: "character-architect",
-      agent_type: "general-purpose",
+      agent_type: "novel-studio:character-architect (fallback: general-purpose + agents/character-architect.md)",
       prompt: "당신은 character-architect 에이전트입니다.
         ${CLAUDE_PLUGIN_ROOT}/agents/character-architect.md를 읽고 역할을 숙지하세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/character/SKILL.md를 읽고 모드 B(작은 설계) 절차와 출력 템플릿을 따르세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md를 읽고 장르 DNA 프레임워크를 숙지하세요.
+        장르가 무협/강호/무림/문파/무공 계열이면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md도 읽고 해당 아크의 한/정/협, 관계 대가, 세력 명분을 반영하세요.
+        플랫폼이 문피아면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md도 읽고 해당 25화 구간의 밀어주기 포인트, 증명 서사, 회차별 주변 반응, 답답함 보상 시점을 반영하세요.
 
         ★ 큰 설계 요약 (Read 불필요 — 리더가 사전 로드):
         --- 부트스트랩 요약 ---
@@ -155,11 +166,13 @@ TeamCreate(
     },
     {
       name: "plot-hook-engineer",
-      agent_type: "general-purpose",
+      agent_type: "novel-studio:plot-hook-engineer (fallback: general-purpose + agents/plot-hook-engineer.md)",
       prompt: "당신은 plot-hook-engineer 에이전트입니다.
         ${CLAUDE_PLUGIN_ROOT}/agents/plot-hook-engineer.md를 읽고 역할을 숙지하세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/plot-hook/SKILL.md를 읽고 모드 B(작은 설계) 절차와 출력 템플릿을 따르세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md를 읽고 장르 DNA 프레임워크를 숙지하세요.
+        장르가 무협/강호/무림/문파/무공 계열이면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md도 읽고 승리의 부채, 패배의 의미, 수련의 대가를 회차별 훅에 반영하세요.
+        플랫폼이 문피아면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md도 읽고 모든 회차에 작은 정산, 보상 가시화, 주변 반응, 다음 기대를 배치하세요.
 
         ★ 큰 설계 요약 (Read 불필요 — 리더가 사전 로드):
         --- 부트스트랩 요약 ---
@@ -267,20 +280,22 @@ character-architect 완료 확인 즉시:
 
    novel-config.md를 Read한 후, 아래 필드를 자동으로 추가/갱신한다:
 
-   ```
+   ```yaml
    업데이트 항목:
-   a) EP 범위별 설정문서 테이블의 해당 행에 세부 문서 경로 추가:
-      - 세부 플롯 가이드 열: {DESIGN_DIR}/{작품가제}_세부플롯훅가이드_{N}~{M}화.md
-      - 세부 캐릭터 시트 열: {DESIGN_DIR}/{작품가제}_세부캐릭터시트_{N}~{M}화.md
-      (기존 행의 EP 범위가 일치하면 해당 열만 갱신, 범위가 없으면 새 행 추가)
-   b) 공통 문서의 character_detail은 변경하지 않는다 (큰 설계 캐릭터시트를 유지).
-      EP 범위별 세부 캐릭터 시트가 있으면 create/polish가 ep_range_table에서 우선 참조한다.
-   c) R7/R8 리서치 결과 참조 경로 (보조 참조 섹션 — EP 범위별 배열):
+   a) ep_range_table에서 해당 range 항목의 세부 문서 경로 추가/갱신:
+      plot_guide_detail: "{DESIGN_DIR}/{작품가제}_세부플롯훅가이드_{N}~{M}화.md"
+      character_detail: "{DESIGN_DIR}/{작품가제}_세부캐릭터시트_{N}~{M}화.md"
+      # 기존 행의 range가 일치하면 위 두 키만 갱신하고, 범위가 없으면 새 행을 추가한다.
+   b) design_documents.character_detail은 변경하지 않는다 (큰 설계 캐릭터시트를 유지).
+      EP 범위별 세부 캐릭터 시트가 있으면 create/polish/rewrite가 ep_range_table에서 우선 참조한다.
+   c) R7/R8 리서치 결과 참조 경로 (research 배열):
       기존 research_r7/r8 항목이 있으면 **배열에 추가** (덮어쓰지 않음):
-      - research_r7:
-        - { range: "EP{N}~EP{M}", path: "_workspace/00_research/R7_전문지식_{N}~{M}화.md" }
-      - research_r8:
-        - { range: "EP{N}~EP{M}", path: "_workspace/00_research/R8_사건상세_{N}~{M}화.md" }
+      research_r7:
+        - range: "EP{N}~EP{M}"
+          path: "_workspace/00_research/R7_전문지식_{N}~{M}화.md"
+      research_r8:
+        - range: "EP{N}~EP{M}"
+          path: "_workspace/00_research/R8_사건상세_{N}~{M}화.md"
       동일 EP 범위의 기존 항목이 있으면 해당 항목만 덮어쓴다.
    ```
 

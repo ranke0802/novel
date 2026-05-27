@@ -9,6 +9,13 @@ description: "웹소설의 큰 설계(전체 소설)를 수행하는 오케스�
 
 ## 실행 모드: 에이전트 팀
 
+## 실행 호환성 규칙
+
+- 아래 `TeamCreate`, `TaskCreate`, `SendMessage`, `TeamDelete` 블록은 오케스트레이션 명세다. 해당 도구가 없는 환경에서는 문자 그대로 호출하지 말고 의존 순서대로 로컬 실행한다.
+- Claude Code에서 플러그인 에이전트가 보이면 `novel-studio:{agent-name}`을 우선 호출한다.
+- 플러그인 에이전트가 보이지 않으면 `general-purpose` 서브에이전트를 호출하되, 프롬프트 첫머리에 반드시 대응하는 `agents/{agent-name}.md` 파일을 읽고 그 역할로 작업하라고 지시한다.
+- 서브에이전트 도구가 없는 환경에서는 오케스트레이터가 `agents/*.md`와 해당 `skills/*/SKILL.md`를 직접 읽고 순차 실행한다.
+
 ## 에이전트 구성
 
 | 팀원 | 에이전트 파일 | 역할 | 스킬 | 출력 |
@@ -22,6 +29,8 @@ description: "웹소설의 큰 설계(전체 소설)를 수행하는 오케스�
 ## 공유 레퍼런스
 
 - **genre-dna-framework.md 위치**: `${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md` (라우터 하위 — big/small 공용)
+- **wuxia-genre-seed.md 위치**: `${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md` (무협/강호/무림/문파/무공 장르일 때 적용)
+- **munpia-platform-seed.md 위치**: `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md` (타겟 플랫폼이 문피아일 때 적용)
 
 ## 워크플로우
 
@@ -73,6 +82,8 @@ description: "웹소설의 큰 설계(전체 소설)를 수행하는 오케스�
    - 타겟 플랫폼이 명시되지 않았으면 한국 플랫폼 6개 중 하나를 확인한다
    - 타겟 플랫폼이 비지원 값이면 자동 치환하지 않고 재선택을 요청한다
 3. `${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md`를 읽어 장르 DNA 프레임워크 확인
+   - 장르가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md`도 읽어 장르 시드로 반영한다
+   - 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`도 읽어 플랫폼 시드로 반영한다
 4. 프로젝트 루트의 참고 문서 확인 (존재 시)
 5. **컨셉 방향 요약**을 사용자에게 제시하여 확인:
    - 주인공 직업/전문 분야
@@ -90,7 +101,7 @@ description: "웹소설의 큰 설계(전체 소설)를 수행하는 오케스�
 > domain-researcher 서브에이전트를 호출하여 전문 분야 리서치를 자동 수행한다. 사용자 대기 없이 즉시 진행한다.
 
 **서브에이전트: domain-researcher**
-- subagent_type: `general-purpose`
+- subagent_type: `novel-studio:domain-researcher` (fallback: `general-purpose` + `agents/domain-researcher.md`)
 - 리서치 항목:
   - **R3 업계/직업 구조**: 해당 전문 분야의 조직 구조, 커리어 패스, 권력 계층
   - **R4 사건 연표**: 해당 분야/시대의 주요 사건, 전환점, 업계 변화
@@ -138,11 +149,13 @@ TeamCreate(
   members: [
     {
       name: "concept-builder",
-      agent_type: "general-purpose",
+      agent_type: "novel-studio:concept-builder (fallback: general-purpose + agents/concept-builder.md)",
       prompt: "당신은 concept-builder 에이전트입니다.
         ${CLAUDE_PLUGIN_ROOT}/agents/concept-builder.md를 읽고 역할을 숙지하세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/bootstrap/SKILL.md를 읽고 작업 절차와 출력 템플릿을 따르세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md를 읽고 장르 DNA 프레임워크를 숙지하세요.
+        장르가 무협/강호/무림/문파/무공 계열이면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md도 읽고 부트스트랩에 반영하세요.
+        플랫폼이 문피아면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md도 읽고 3화 하이컨셉, 1화 계약서, 보상 가시화 방식, 회차별 정산 루프, 무료 구간 기대 자산을 부트스트랩에 반영하세요.
         프로젝트 루트의 참고 문서도 읽으세요 (존재 시).
 
         ★ 자동 리서치 결과 (존재하는 파일만 Read):
@@ -160,11 +173,13 @@ TeamCreate(
     },
     {
       name: "character-architect",
-      agent_type: "general-purpose",
+      agent_type: "novel-studio:character-architect (fallback: general-purpose + agents/character-architect.md)",
       prompt: "당신은 character-architect 에이전트입니다.
         ${CLAUDE_PLUGIN_ROOT}/agents/character-architect.md를 읽고 역할을 숙지하세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/character/SKILL.md를 읽고 작업 절차와 출력 템플릿을 따르세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md를 읽고 장르 DNA 프레임워크를 숙지하세요.
+        장르가 무협/강호/무림/문파/무공 계열이면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md도 읽고 인물·관계·세력 설계에 반영하세요.
+        플랫폼이 문피아면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md도 읽고 주인공 밀어주기 포인트, 증명 서사, 내 사람/적 경계, 우위 노출, 주변 반응 설계를 캐릭터 시트에 반영하세요.
 
         ★ 자동 리서치 결과 (존재하는 파일만 Read):
         - _workspace/00_research/R3_업계구조.md → 반영: 빌런 > 직급/소속/권한, 조력자 > 업계 내 위치
@@ -180,11 +195,13 @@ TeamCreate(
     },
     {
       name: "plot-hook-engineer",
-      agent_type: "general-purpose",
+      agent_type: "novel-studio:plot-hook-engineer (fallback: general-purpose + agents/plot-hook-engineer.md)",
       prompt: "당신은 plot-hook-engineer 에이전트입니다.
         ${CLAUDE_PLUGIN_ROOT}/agents/plot-hook-engineer.md를 읽고 역할을 숙지하세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/plot-hook/SKILL.md를 읽고 작업 절차와 출력 템플릿을 따르세요.
         ${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md를 읽고 장르 DNA 프레임워크를 숙지하세요.
+        장르가 무협/강호/무림/문파/무공 계열이면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md도 읽고 한/정/협, 명분과 대가, 강호 세력 논리를 플롯에 반영하세요.
+        플랫폼이 문피아면 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md도 읽고 3화 하이컨셉, 초반 1~25화 연독 구조, 보상 가시화, 유료화 전 기대 자산을 플롯에 반영하세요.
 
         ★ 자동 리서치 결과 (존재하는 파일만 Read):
         - _workspace/00_research/R4_사건연표.md → 반영: 핵심 역량 모듈 활용 타임라인 > 실제 사건 매핑
@@ -290,10 +307,7 @@ TaskCreate(tasks: [
 
 생성 경로: `{프로젝트 루트}/novel-config.md`
 
-```markdown
-# novel-config.md (자동 생성 초안 — 검토 후 수정 가능)
-
-## 프로젝트 기본 정보
+```yaml
 project:
   name: "{작품가제}"
   target_platform: "{Phase 1에서 확인된 플랫폼}"
@@ -302,37 +316,50 @@ project:
   work_dir: "revision/"
   design_dir: "design/"
 
-## 설정문서 매핑
-### 공통 문서
-| 문서 키 | 경로 | 용도 |
-|---------|------|------|
-| character_core | {DESIGN_DIR}/{작품가제}_캐릭터시트.md | 캐릭터 핵심 정의 |
-| character_detail | {DESIGN_DIR}/{작품가제}_캐릭터시트.md | 보이스표, 비언어 태그 |
-| dialogue_dna | {DESIGN_DIR}/{작품가제}_캐릭터시트.md#dialogue-dna | Dialogue DNA (대사 고유성) — 캐릭터시트 내 섹션 |
-| bootstrap | {DESIGN_DIR}/{작품가제}_부트스트랩.md | 세계관, 매크로 수치 |
-| writing_rules | CLAUDE.md | 집필 규칙 |
+design_documents:
+  bootstrap: "{DESIGN_DIR}/{작품가제}_부트스트랩.md"
+  character_core: "{DESIGN_DIR}/{작품가제}_캐릭터시트.md"
+  character_detail: "{DESIGN_DIR}/{작품가제}_캐릭터시트.md"
+  dialogue_dna: "{DESIGN_DIR}/{작품가제}_캐릭터시트.md#dialogue-dna"
+  writing_rules: "CLAUDE.md"
+  plot_macro: "{DESIGN_DIR}/{작품가제}_플롯훅가이드.md"
 
-### EP 범위별 설정문서
-| EP 범위 | 레이블 | 플롯 가이드 경로 | 세부 플롯 가이드 (선택) | 세부 캐릭터 시트 (선택) |
-|---------|--------|----------------|----------------------|----------------------|
-| {아크1 범위} | {아크1 레이블} | {DESIGN_DIR}/{작품가제}_플롯훅가이드.md | | |
-| {아크2 범위} | {아크2 레이블} | {DESIGN_DIR}/{작품가제}_플롯훅가이드.md | | |
-| {아크3 범위} | {아크3 레이블} | {DESIGN_DIR}/{작품가제}_플롯훅가이드.md | | |
+ep_range_table:
+  - range: "{아크1 범위}"
+    label: "{아크1 레이블}"
+    plot_guide: "{DESIGN_DIR}/{작품가제}_플롯훅가이드.md"
+    plot_guide_detail: ""
+    character_detail: ""
+  - range: "{아크2 범위}"
+    label: "{아크2 레이블}"
+    plot_guide: "{DESIGN_DIR}/{작품가제}_플롯훅가이드.md"
+    plot_guide_detail: ""
+    character_detail: ""
+  - range: "{아크3 범위}"
+    label: "{아크3 레이블}"
+    plot_guide: "{DESIGN_DIR}/{작품가제}_플롯훅가이드.md"
+    plot_guide_detail: ""
+    character_detail: ""
 
-## 보존 가드레일
-{부트스트랩에서 추출한 핵심 보존 항목}
+guard_rails:
+  - "{부트스트랩에서 추출한 핵심 보존 항목}"
 
-## 수치 교차검증 정본 우선순위
-1. plot_by_ep — EP별 확정 수치
-2. bootstrap — 매크로 수치
-3. verification — 검증 완료 수치
-4. 직전 에피소드 — 서사 연속성
+number_source_priority:
+  - ep_range_table[].plot_guide_detail
+  - ep_range_table[].plot_guide
+  - design_documents.bootstrap
+  - design_documents.verification
+  - previous_episode
+
+custom_axes: {}
+
+silence_exceptions: []
 ```
 
 5. 사용자에게 초안 검토를 요청한다:
 ```
 novel-config.md 초안을 생성했습니다.
-보존 가드레일과 EP 범위 테이블을 검토하고, 필요시 커스텀 축을 추가해주세요.
+보존 가드레일과 ep_range_table을 검토하고, 필요시 커스텀 축을 추가해주세요.
 ```
 
 ### 큰 설계 완료 시 작은 설계 안내
@@ -353,7 +380,7 @@ novel-config.md 초안을 생성했습니다.
 
 작은 설계를 진행하시려면 `design-small` 스킬을 사용하세요.
 작은 설계에서도 domain-researcher가 자동으로 해당 아크의 세부 리서치를 수행합니다.
-작은 설계 완료 시 novel-config.md의 EP 범위 테이블에 세부 플롯 가이드 경로가 자동 추가됩니다.
+작은 설계 완료 시 novel-config.md의 ep_range_table에 plot_guide_detail 및 범위 전용 character_detail 경로가 자동 추가됩니다.
 ```
 
 ## 에러 핸들링
