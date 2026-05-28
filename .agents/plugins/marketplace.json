@@ -8,7 +8,7 @@
       "name": "novel-studio",
       "source": {
         "source": "local",
-        "path": "./plugins/novel-studio"
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",

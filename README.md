@@ -163,12 +163,17 @@ project:
 design_documents:
   bootstrap: "design/my-novel_bootstrap.md"
   character_core: "design/my-novel_character.md"
-  plot_guide: "design/my-novel_plot-hook.md"
+  character_detail: "design/my-novel_character.md"
+  dialogue_dna: "design/my-novel_character.md#dialogue-dna"
+  writing_rules: "CLAUDE.md"
+  plot_macro: "design/my-novel_plot-hook.md"
 
 ep_range_table:
-  - range: "EP001-EP025"
+  - range: "EP001~EP025"
     label: "Act 1: Origin"
     plot_guide: "design/my-novel_plot-hook.md"
+    plot_guide_detail: ""
+    character_detail: ""
 
 guard_rails:
   - "The protagonist's regression ability only allows recalling past information"
@@ -177,7 +182,7 @@ custom_axes:
   EXPERTISE: "Domain knowledge should be hinted at through dialogue, never explained"
 ```
 
-- **ep_range_table**: Episode ranges auto-extracted from the plot guide
+- **ep_range_table**: Episode ranges auto-extracted from the plot guide. Small-design outputs go in `plot_guide_detail` and range-level `character_detail`.
 - **guard_rails**: Absolute rules enforced at every creation and polish step
 - **custom_axes**: Project-specific additional polish criteria
 

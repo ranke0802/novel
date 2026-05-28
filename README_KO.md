@@ -161,12 +161,17 @@ project:
 design_documents:
   bootstrap: "design/소설명_부트스트랩.md"
   character_core: "design/소설명_캐릭터시트.md"
-  plot_guide: "design/소설명_플롯훅가이드.md"
+  character_detail: "design/소설명_캐릭터시트.md"
+  dialogue_dna: "design/소설명_캐릭터시트.md#dialogue-dna"
+  writing_rules: "CLAUDE.md"
+  plot_macro: "design/소설명_플롯훅가이드.md"
 
 ep_range_table:
-  - range: "EP001-EP025"
+  - range: "EP001~EP025"
     label: "1막: 기원"
     plot_guide: "design/소설명_플롯훅가이드.md"
+    plot_guide_detail: ""
+    character_detail: ""
 
 guard_rails:
   - "주인공의 회귀 능력은 과거 정보 회상만 가능"
@@ -175,7 +180,7 @@ custom_axes:
   EXPERTISE: "전문 지식은 대사에서 냄새만 풍기되 설명하지 않음"
 ```
 
-- **ep_range_table**: 플롯 가이드에서 자동 추출된 에피소드 범위
+- **ep_range_table**: 플롯 가이드에서 자동 추출된 에피소드 범위. 작은 설계 산출물은 `plot_guide_detail`, 범위 전용 `character_detail`에 기록합니다.
 - **guard_rails**: 모든 집필/윤문 단계에서 검증되는 절대 규칙
 - **custom_axes**: 프로젝트별 추가 윤문 기준
 
