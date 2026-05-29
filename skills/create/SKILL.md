@@ -106,6 +106,7 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
    {EPISODE_DIR}  ← config.project.episode_dir
    {WORK_DIR}     ← config.project.work_dir
    {DESIGN_DOCS}  ← config.design_documents
+   {WRITING_RULES} ← config.design_documents.writing_rules (있으면, 없으면 프로젝트 루트 CLAUDE.md가 존재할 때 사용)
    {GUARD_RAILS}  ← config.guard_rails + config.create_guard_rails (있으면)
    {CUSTOM_AXES}  ← config.custom_axes (있으면)
    {CREATE_CFG}   ← config.create 설정 (있으면, 없으면 기본값)
@@ -185,6 +186,7 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
     - 플롯가이드: `{PLOT_DOC}` (Step 0.4에서 ep_range_table로 결정된 경로)
     - 캐릭터시트 core: `{DESIGN_DOCS.character_core}` (novel-config.md의 design_documents.character_core 경로)
     - 캐릭터시트 detail: `{CHAR_DETAIL_EP}` (ep_range_table 범위 전용 character_detail 우선, 없으면 design_documents.character_detail)
+    - 집필 규칙 바이블: `{WRITING_RULES}` (있을 경우, novel-config.md의 design_documents.writing_rules)
     - 타겟 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`
   - novel-config.md의 가드레일, 커스텀 축
   - **목표 분량 명시** (반드시 포함):
@@ -205,7 +207,8 @@ novel-config.md가 없으면 에러를 출력하고 종료한다.
     3. {DESIGN_DOCS.character_core}
     4. {CHAR_DETAIL_EP}
     5. novel-config.md
-    6. 타겟 플랫폼이 문피아일 때만 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md
+    6. {WRITING_RULES} (있을 경우)
+    7. 타겟 플랫폼이 문피아일 때만 ${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md
     위 목록 외의 Read 시도는 경로 제한 위반이다.
     ```
   - 출력 경로: `{WORK_DIR}/_workspace/01_episode-architect_blueprint_EP{NNN}.md`
@@ -237,8 +240,9 @@ Phase 1 완료 후 episode-creator를 실행한다.
     - `{WORK_DIR}/_workspace/01_episode-architect_blueprint_EP{NNN}.md`
     - `{WORK_DIR}/_workspace/02_continuity-bridge_report_EP{NNN}.md`
     - 캐릭터시트 core + detail + dialogue DNA
-  - novel-config.md의 가드레일
-  - `{CREATE_CFG}` 설정 (목표 글자수, 대화 비율 등)
+    - `{WRITING_RULES}` (있을 경우): 프로젝트 집필 규칙 바이블. 시점/문체/회차 구조/금지사항은 이 문서를 최우선으로 따른다
+    - novel-config.md의 가드레일
+    - `{CREATE_CFG}` 설정 (목표 글자수, 대화 비율 등)
   - 출력 경로: `{EPISODE_DIR}/ep{NNN}.md`
   - 상세 집필 원칙이 필요하면 `references/creation-principles.md`를 읽으라고 지시
   - 장르/설정문서가 무협/강호/무림/문파/무공 계열이면 `references/wuxia-scene-style.md`도 읽고 장면·대화·무공·문체에 적용하라고 지시
@@ -328,6 +332,7 @@ episode-creator는 6000-10000자 초안을 작성한다. 오케스트레이터�
     - `{WORK_DIR}/_workspace/01_episode-architect_blueprint_EP{NNN}.md`
     - `{WORK_DIR}/_workspace/02_continuity-bridge_report_EP{NNN}.md`
     - 설정문서 (부트스트랩, 캐릭터시트, 플롯가이드)
+    - `{WRITING_RULES}` (있을 경우): 프로젝트 집필 규칙 바이블
     - novel-config.md (가드레일, 수치 검증 우선순위, 커스텀 축)
     - 장르/설정문서가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/polish/references/wuxia-quality-checklist.md`
     - 타겟 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`

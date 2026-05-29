@@ -49,6 +49,7 @@ episode-rewriter → rewritten episode + execution report → quality-verifier
 오케스트레이터가 다음을 프롬프트에 포함한다:
 - 에피소드 파일 경로
 - 설정문서 경로 (부트스트랩, 캐릭터시트, 플롯가이드)
+- 프로젝트 집필 규칙 바이블 경로 `{WRITING_RULES}` (있을 경우)
 - novel-config.md (가드레일, 수치 검증 우선순위, 커스텀 축)
 - 연속성 보고서 또는 직전 에피소드 경로
 

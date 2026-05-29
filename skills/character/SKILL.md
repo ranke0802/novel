@@ -8,6 +8,7 @@ description: "웹소설의 캐릭터 시트를 단독으로 생성한다. 전체
 웹소설의 캐릭터 시트를 생성한다. 큰 설계와 작은 설계 두 가지 모드로 동작한다.
 
 ## 사전 조건
+- 프로젝트 루트에 `novel-config.md`가 있고 `design_documents.writing_rules`가 지정되어 있으면 해당 파일을 읽어 프로젝트 고유 시점, 문체, 인물 원칙, 금지사항을 최우선으로 적용한다. 없더라도 프로젝트 루트 `CLAUDE.md`가 존재하면 집필 규칙 바이블로 읽는다
 - `references/genre-dna-framework.md`의 캐릭터 프레임워크 숙지
 - 무협/강호/무림/문파/무공 장르라면 `../design/references/wuxia-genre-seed.md`의 인물·관계·세력 원칙을 숙지
 - 타겟 플랫폼이 문피아라면 `../design/references/munpia-platform-seed.md`의 "밀어주고 싶은 주인공", 주변 반응, 답답함 운용 원칙을 숙지

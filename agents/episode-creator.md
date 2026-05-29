@@ -137,6 +137,7 @@ description: "에피소드 본문 집필 전문가. 설계도와 연속성 보�
 - `_workspace/01_episode-architect_blueprint_EP{NNN}.md` (설계도)
 - `_workspace/02_continuity-bridge_report_EP{NNN}.md` (연속성 보고서)
 - 캐릭터시트 core + detail + dialogue DNA 경로
+- 프로젝트 집필 규칙 바이블 `{WRITING_RULES}` (있을 경우)
 - novel-config.md의 가드레일
 - novel-config.md의 `[create]` 설정 (목표 글자수, 대화 비율 등)
 - (재작성 시) `_workspace/04_quality-verifier_verdict_EP{NNN}.md` (수정 지시)

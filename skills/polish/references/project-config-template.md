@@ -22,7 +22,7 @@ design_documents:
   character_core: "design/character_sheet.md"
   character_detail: "design/character_sheet_detail.md"
   dialogue_dna: "design/character_sheet.md#dialogue-dna" # 선택. 없으면 character_detail로 대체
-  writing_rules: "CLAUDE.md"                              # 선택. 없으면 프로젝트 루트 CLAUDE.md
+  writing_rules: "CLAUDE.md"                              # 선택. 프로젝트별 집필 규칙 바이블
   web_novel_guide: "design/web-novel-guide.md"            # 선택
   verification: "design/verification.md"                  # 선택
   plot_macro: "design/plot-hook-guide.md"                 # 선택
@@ -103,7 +103,7 @@ rewrite:
 | `design_documents.character_detail` | 보이스표, 호칭표, 비언어 태그, 관계 변화 |
 | `design_documents.dialogue_dna` | Dialogue DNA. 없으면 character_detail로 대체 |
 | `design_documents.bootstrap` | 매크로 수치, 세계관 규칙, 시간선 |
-| `design_documents.writing_rules` | 집필 규칙 바이블 |
+| `design_documents.writing_rules` | 집필 규칙 바이블. 시점, 문체, 회차 구조, 금지사항, 프로젝트별 독자 약속의 최우선 정본 |
 | `ep_range_table[].plot_guide` | 해당 EP 범위의 큰 설계 플롯 가이드 |
 | `ep_range_table[].plot_guide_detail` | 해당 EP 범위의 작은 설계 플롯 가이드 |
 | `ep_range_table[].character_detail` | 해당 EP 범위 전용 캐릭터 상세 문서 |

@@ -8,6 +8,7 @@ description: "웹소설의 플롯 구조와 훅 가이드를 단독으로 생성
 웹소설의 플롯 구조와 독자 유지 훅을 설계한다. 큰 설계와 작은 설계 두 가지 모드로 동작한다.
 
 ## 사전 조건
+- 프로젝트 루트에 `novel-config.md`가 있고 `design_documents.writing_rules`가 지정되어 있으면 해당 파일을 읽어 프로젝트 고유 회차 구조, 훅, 금지사항을 최우선으로 적용한다. 없더라도 프로젝트 루트 `CLAUDE.md`가 존재하면 집필 규칙 바이블로 읽는다
 - `references/genre-dna-framework.md`의 서사 공식 및 카타르시스 리듬 숙지
 - 무협/강호/무림/문파/무공 장르라면 `../design/references/wuxia-genre-seed.md`의 한/정/협, 성장의 대가, 승리/패배/수련 원칙 숙지
 - 타겟 플랫폼이 문피아라면 `../design/references/munpia-platform-seed.md`의 1화 계약서, 회차별 정산 루프, 무료 구간 기대 자산, 연독 훅 원칙 숙지

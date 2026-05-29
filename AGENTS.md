@@ -30,4 +30,12 @@ Generated novel project files should follow the upstream structure:
 - `revision/`
 - `_workspace/`
 
+This workspace has a project-specific writing bible:
+
+- `CLAUDE.md` — source-of-truth writing rules for `중고 노트북 속 AI가 너무 전능함`
+- `novel-config.md` — maps the writing bible and design documents into the harness
+- `design/future-ai_*.md` — bootstrap, character sheet, and plot/hook guides
+
+For every harness command in this workspace, load `novel-config.md` first when it exists. If `design_documents.writing_rules` is present, treat that file as a high-priority project bible and pass it to downstream planning, writing, polish, and rewrite agents. Do not override these rules with generic genre defaults.
+
 The supported target platforms are `문피아`, `네이버시리즈`, `카카오페이지`, `리디`, `조아라`, and `노벨피아`.

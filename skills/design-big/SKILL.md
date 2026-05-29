@@ -84,7 +84,7 @@ description: "웹소설의 큰 설계(전체 소설)를 수행하는 오케스�
 3. `${CLAUDE_PLUGIN_ROOT}/skills/design/references/genre-dna-framework.md`를 읽어 장르 DNA 프레임워크 확인
    - 장르가 무협/강호/무림/문파/무공 계열이면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/wuxia-genre-seed.md`도 읽어 장르 시드로 반영한다
    - 플랫폼이 문피아면 `${CLAUDE_PLUGIN_ROOT}/skills/design/references/munpia-platform-seed.md`도 읽어 플랫폼 시드로 반영한다
-4. 프로젝트 루트의 참고 문서 확인 (존재 시)
+4. 프로젝트 루트의 참고 문서 확인 (존재 시). `novel-config.md`의 `design_documents.writing_rules` 또는 프로젝트 루트 `CLAUDE.md`가 있으면 프로젝트 고유 규칙 바이블로 최우선 반영한다
 5. **컨셉 방향 요약**을 사용자에게 제시하여 확인:
    - 주인공 직업/전문 분야
    - 서사 기점 (시대, 계기)

@@ -160,6 +160,7 @@ novel-config.md의 `ep_range_table`에서 해당 EP의 플롯 문서와 캐릭�
 {CHAR_DETAIL} = ep_range_table[].character_detail 경로가 있고 파일이 존재하면 범위 전용 문서 우선,
                 없으면 design_documents.character_detail
 {BOOTSTRAP} = design_documents.bootstrap
+{WRITING_RULES} = design_documents.writing_rules (있으면, 없으면 프로젝트 루트 CLAUDE.md가 존재할 때 사용)
 {GUIDE} = design_documents.web_novel_guide
 {VERIFY} = design_documents.verification
 {PLOT_MACRO} = design_documents.plot_macro
@@ -248,6 +249,7 @@ Agent("rule-checker"):
            호칭·금지표현·침묵 패턴이 직전 화와 겹치거나 충돌하는지 확인.
 
            ★ 설정문서 로드 (novel-config.md 기준):
+           - {WRITING_RULES} — 프로젝트 집필 규칙 바이블 (있을 경우)
            - {CHAR_DETAIL} — 보이스표(종결어미·길이·패턴), 호칭 규칙표(화자×청자)
            - {CHAR_CORE} — 주인공 감정 표현 규칙 (크랙 문법 등)
 
@@ -265,6 +267,7 @@ Agent("story-analyst"):
            직전 2화({EPISODE_DIR}/ep{NNN-2}.md, {EPISODE_DIR}/ep{NNN-1}.md)도 전문 정독.
 
            ★ 설정문서 로드 (novel-config.md 기준 — 수치·시간·설정 정본):
+           - {WRITING_RULES} — 프로젝트 집필 규칙 바이블 (있을 경우)
            - {PLOT_DOC} — 해당 EP의 확정 수치 (면적·자금·수확량·인원·시간대)
            - {BOOTSTRAP} — 매크로 수치 정본
            - {CHAR_CORE} — 캐릭터 나이(생년 기준), 고유 설정 정본
@@ -297,6 +300,7 @@ Agent("platform-optimizer"):
            직전 EP 마지막 500자 → 현재 EP 첫 1,000자 연결 자연스러움 확인.
 
            ★ 설정문서 로드 (novel-config.md 기준):
+           - {WRITING_RULES} — 프로젝트 집필 규칙 바이블 (있을 경우)
            - {PLOT_DOC} — 해당 EP의 훅 유형·감정강도·비트 구조
            - {PLOT_MACRO} — 핵심 전환 포인트 (있을 경우)
            - {GUIDE} — 모바일 최적화 원칙 (있을 경우)
@@ -320,6 +324,7 @@ Agent("alive-enhancer"):
            동일 비언어 표현이 직전 화에서 반복 사용되는지 확인.
 
            ★ 설정문서 로드 (novel-config.md 기준):
+           - {WRITING_RULES} — 프로젝트 집필 규칙 바이블 (있을 경우)
            - {CHAR_CORE} — 조연별 고유 긴장점, 주요 관계 곡선
            - {CHAR_DETAIL} — 비언어 태그 팔레트, 호칭 규칙, 관계 변화표
 
@@ -349,6 +354,7 @@ Agent("revision-executor"):
            교정 전 직전 2화를 반드시 읽어 중복 내용 제거 및 연속성 보장을 확인하라.
 
            ★ 설정문서 로드 (novel-config.md 기준):
+           - {WRITING_RULES} — 프로젝트 집필 규칙 바이블 (있을 경우)
            - {PLOT_DOC} — 해당 EP의 확정 수치·비트
            - {BOOTSTRAP} — 매크로 수치 정본
            - {CHAR_CORE} — 주인공 고유 설정, 나이(생년 기준)
@@ -400,6 +406,7 @@ Agent("revision-reviewer"):
            직전 2화도 반드시 참조하라.
 
            ★ 설정문서 로드 (novel-config.md 기준):
+           - {WRITING_RULES} — 프로젝트 집필 규칙 바이블 (있을 경우)
            - {PLOT_DOC} — 해당 EP의 확정 수치·비트
            - {BOOTSTRAP} — 매크로 수치 정본
            - {CHAR_CORE} — 주인공 고유 설정 정본
