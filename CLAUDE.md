@@ -163,7 +163,10 @@
 
 ## 6. AI 설정
 
-- 임시 명칭: 로컬 인지 커널. 별명은 추후 부여 가능.
+- 공식 식별명: Origin Reconstruction Intelligence.
+- 약칭: ORI.
+- 모델 식별명: ORI-122P-A12B-Q0.012.
+- 강도현은 2화에서 "오리"라는 별명을 붙인다.
 - 정체: 200년 뒤 기준의 경량 온디바이스 인지 커널.
 - 미래의 완성품이 아니라 커 블랙홀을 이용한 정보 압축 전송 실험의 결과물이다.
 - 원래 실험은 인간 기억을 과거로 보내기 전 단계였고, 먼저 AI 인지 커널을 보냈다.
@@ -175,7 +178,7 @@
 
 스펙:
 
-- Model Scale: 122P-A12B-Q0.012
+- Model Scale: ORI-122P-A12B-Q0.012
 - Total Parameters: 122P
 - Active Parameters: 12B
 - Context Window: 128M

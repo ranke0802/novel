@@ -42,7 +42,9 @@ AI는 자신이 약 200년 뒤 기술로 구성된 로컬 지능이라고 밝힌
 
 스펙:
 
-- Model Scale: 122P-A12B-Q0.012
+- Official Name: Origin Reconstruction Intelligence
+- Short Name: ORI
+- Model Scale: ORI-122P-A12B-Q0.012
 - Total Parameters: 122P
 - Active Parameters: 12B
 - Context Window: 128M
@@ -77,6 +79,8 @@ AI는 답한다.
 "가능해요."
 
 5분 후, 실현손익 +19,804,000원.
+
+강도현은 첫 검증 뒤 AI의 공식 식별명이 Origin Reconstruction Intelligence라는 사실을 듣고, 너무 길다며 "오리"라는 별명을 붙인다. 이름을 붙이는 순간, 막연한 초월 기술이 강도현이 부를 수 있는 존재가 된다.
 
 강도현은 바로 한 번 더 하려 한다. AI는 막는다. 반복하면 증권사 내부 모니터링, 거래소 시장감시, 금융당국 조사 대상이 될 수 있기 때문이다.
 

@@ -57,7 +57,9 @@
 ## 2. 200년 뒤 AI
 
 - **정체**: 200년 뒤 기준의 로컬 인지 커널. 커 블랙홀 정보 압축 전송 실험의 결과물.
-- **스펙**: 122P-A12B-Q0.012 / Total Parameters 122P / Active Parameters 12B / Context Window 128M / Throughput 31,840 tok/s.
+- **공식 식별명**: Origin Reconstruction Intelligence, 약칭 ORI. 모델 식별명은 ORI-122P-A12B-Q0.012.
+- **별명**: 2화에서 강도현이 "오리"라고 부르기 시작한다.
+- **스펙**: ORI-122P-A12B-Q0.012 / Total Parameters 122P / Active Parameters 12B / Context Window 128M / Throughput 31,840 tok/s.
 - **서사 기능**: 돈복사 도파민, 현실 권력 대응, 유이카 연구 보조, 지진 전조 데이터, 외계 신호 번역을 제공하되 최종 선택은 강도현에게 남긴다.
 - **목소리**: 블루투스 이어폰에서 여덟아홉 살쯤 된 여자아이 목소리로 들린다.
 - **핵심 이유**: "두 분이 덜 무서워하니까요."
