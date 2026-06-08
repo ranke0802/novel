@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>웹소설 개행 정리기</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f4;
+      --panel: #ffffff;
+      --text: #20231f;
+      --muted: #686f66;
+      --line: #d8ddd3;
+      --accent: #2f7d62;
+      --accent-dark: #236149;
+      --soft: #edf4ef;
+      --warn: #9a5b1d;
+      --shadow: 0 8px 24px rgba(23, 35, 28, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+      letter-spacing: 0;
+    }
+
+    main {
+      width: min(1440px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 48px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      background: var(--soft);
+    }
+
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    button.primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .settings {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      min-height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding-top: 18px;
+    }
+
+    .toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      min-height: calc(100vh - 154px);
+    }
+
+    .pane {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 560px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .pane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfa;
+    }
+
+    .pane-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 480px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      padding: 16px;
+      color: var(--text);
+      background: #fff;
+      font-family: "D2Coding", "Consolas", "Malgun Gothic", monospace;
+      font-size: 14px;
+      line-height: 1.65;
+      letter-spacing: 0;
+      tab-size: 2;
+    }
+
+    .pane-foot {
+      min-height: 34px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      background: #fbfcfa;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      min-width: 180px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: #20231f;
+      color: #fff;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      main {
+        width: min(100vw - 20px, 760px);
+        padding-top: 12px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toolbar {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .settings {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .settings {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <h1>웹소설 개행 정리기</h1>
+      <div class="toolbar">
+        <button class="primary" id="formatBtn" type="button" title="왼쪽 원문을 개행 규칙에 맞춰 다시 정리합니다.">정리</button>
+        <button id="copyBtn" type="button" title="오른쪽 결과를 클립보드에 복사합니다.">복사</button>
+        <button id="downloadBtn" type="button" title="오른쪽 결과를 텍스트 파일로 저장합니다.">저장</button>
+        <button id="clearBtn" type="button" title="양쪽 텍스트를 비웁니다.">비우기</button>
+      </div>
+    </div>
+
+    <section class="settings" aria-label="개행 규칙">
+      <label>
+        일반 문단 빈 줄
+        <input id="proseGap" type="number" min="0" max="5" value="1">
+      </label>
+      <label>
+        대사 앞뒤 빈 줄
+        <input id="dialogueGap" type="number" min="0" max="5" value="2">
+      </label>
+      <label>
+        대사 사이 빈 줄
+        <input id="dialogueInnerGap" type="number" min="0" max="5" value="1">
+      </label>
+      <label class="toggle">
+        <input id="joinScreenLines" type="checkbox" checked>
+        화면 출력 붙이기
+      </label>
+    </section>
+
+    <section class="workspace">
+      <div class="pane">
+        <div class="pane-head">
+          <div class="pane-title">원문</div>
+          <div class="meta" id="inputMeta">0자 · 0줄</div>
+        </div>
+        <textarea id="inputText" spellcheck="false" placeholder="여기에 원문을 붙여넣으면 오른쪽에 개행 정리본이 바로 나옵니다."></textarea>
+        <div class="pane-foot">대사, 화면 출력, 일반 문단을 감지해 1~4화식 호흡으로 재배치합니다.</div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-head">
+          <div class="pane-title">개행 적용본</div>
+          <div class="meta" id="outputMeta">0자 · 0줄</div>
+        </div>
+        <textarea id="outputText" spellcheck="false" placeholder="자동 정리 결과가 표시됩니다. 여기서 직접 수정할 수도 있습니다."></textarea>
+        <div class="pane-foot" id="ruleSummary">일반 1줄 · 대사 앞뒤 2줄 · 대사 사이 1줄 · 화면 출력 붙임</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const inputText = document.getElementById("inputText");
+    const outputText = document.getElementById("outputText");
+    const inputMeta = document.getElementById("inputMeta");
+    const outputMeta = document.getElementById("outputMeta");
+    const ruleSummary = document.getElementById("ruleSummary");
+    const toast = document.getElementById("toast");
+
+    const controls = {
+      proseGap: document.getElementById("proseGap"),
+      dialogueGap: document.getElementById("dialogueGap"),
+      dialogueInnerGap: document.getElementById("dialogueInnerGap"),
+      joinScreenLines: document.getElementById("joinScreenLines"),
+    };
+
+    const sample = `5화. 출근
+
+오리에게는 출근 전에 미리 이야기해 두었다.
+
+회사에서는 음성보다 텍스트로 대화할 것.
+
+"제가 필요하다고 판단되면 간단한 프로그램을 만들어서 사용할 수 있도록 해주세요"
+
+나는 그렇게 하라고 말했다.
+
+[회사 자료는 내 계정 권한 안에서만 본다.]
+[개인정보는 마스킹한다.]`;
+
+    function lineKind(line) {
+      if (/^\d+화\./.test(line)) return "title";
+      if (/^[“"']/.test(line)) return "dialogue";
+      if (/^\[/.test(line)) return "screen";
+      return "prose";
+    }
+
+    function blankLines(count) {
+      return Array(Math.max(0, Number(count) || 0)).fill("");
+    }
+
+    function readOptions() {
+      return {
+        proseGap: Number(controls.proseGap.value),
+        dialogueGap: Number(controls.dialogueGap.value),
+        dialogueInnerGap: Number(controls.dialogueInnerGap.value),
+        joinScreenLines: controls.joinScreenLines.checked,
+      };
+    }
+
+    function splitBlocks(lines, options) {
+      const blocks = [];
+      let index = 0;
+
+      while (index < lines.length) {
+        const line = lines[index];
+        const kind = lineKind(line);
+        const items = [line];
+        index += 1;
+
+        const shouldGroup = kind === "dialogue" || (kind === "screen" && options.joinScreenLines);
+
+        if (shouldGroup) {
+          while (index < lines.length && lineKind(lines[index]) === kind) {
+            items.push(lines[index]);
+            index += 1;
+          }
+        }
+
+        blocks.push({ kind, items });
+      }
+
+      return blocks;
+    }
+
+    function gapBetween(current, next, options) {
+      if (current.kind === "dialogue" || next.kind === "dialogue") {
+        return options.dialogueGap;
+      }
+      return options.proseGap;
+    }
+
+    function formatNovelBreaks(text) {
+      const options = readOptions();
+      const lines = text
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .split("\n")
+        .map((line) => line.trimEnd())
+        .filter((line) => line.trim().length > 0);
+
+      if (lines.length === 0) return "";
+
+      const blocks = splitBlocks(lines, options);
+      const out = [];
+
+      blocks.forEach((block, blockIndex) => {
+        if (block.kind === "dialogue") {
+          block.items.forEach((item, itemIndex) => {
+            out.push(item);
+            if (itemIndex < block.items.length - 1) {
+              out.push(...blankLines(options.dialogueInnerGap));
+            }
+          });
+        } else {
+          block.items.forEach((item) => out.push(item));
+        }
+
+        if (blockIndex < blocks.length - 1) {
+          out.push(...blankLines(gapBetween(block, blocks[blockIndex + 1], options)));
+        }
+      });
+
+      return out.join("\n").replace(/[ \t]+$/gm, "") + "\n";
+    }
+
+    function countLines(text) {
+      if (!text) return 0;
+      return text.replace(/\n$/, "").split("\n").length;
+    }
+
+    function updateMeta() {
+      inputMeta.textContent = `${inputText.value.length.toLocaleString("ko-KR")}자 · ${countLines(inputText.value).toLocaleString("ko-KR")}줄`;
+      outputMeta.textContent = `${outputText.value.length.toLocaleString("ko-KR")}자 · ${countLines(outputText.value).toLocaleString("ko-KR")}줄`;
+    }
+
+    function updateSummary() {
+      const options = readOptions();
+      ruleSummary.textContent = `일반 ${options.proseGap}줄 · 대사 앞뒤 ${options.dialogueGap}줄 · 대사 사이 ${options.dialogueInnerGap}줄 · 화면 출력 ${options.joinScreenLines ? "붙임" : "분리"}`;
+    }
+
+    function formatNow() {
+      outputText.value = formatNovelBreaks(inputText.value);
+      updateMeta();
+      updateSummary();
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1400);
+    }
+
+    async function copyOutput() {
+      if (!outputText.value) {
+        showToast("복사할 내용이 없습니다.");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(outputText.value);
+        showToast("복사했습니다.");
+      } catch {
+        outputText.focus();
+        outputText.select();
+        document.execCommand("copy");
+        showToast("복사했습니다.");
+      }
+    }
+
+    function downloadOutput() {
+      if (!outputText.value) {
+        showToast("저장할 내용이 없습니다.");
+        return;
+      }
+
+      const blob = new Blob([outputText.value], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "formatted-episode.txt";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast("저장했습니다.");
+    }
+
+    function clearAll() {
+      inputText.value = "";
+      outputText.value = "";
+      updateMeta();
+      showToast("비웠습니다.");
+      inputText.focus();
+    }
+
+    inputText.addEventListener("input", formatNow);
+    outputText.addEventListener("input", updateMeta);
+    document.getElementById("formatBtn").addEventListener("click", formatNow);
+    document.getElementById("copyBtn").addEventListener("click", copyOutput);
+    document.getElementById("downloadBtn").addEventListener("click", downloadOutput);
+    document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+    Object.values(controls).forEach((control) => {
+      control.addEventListener("input", formatNow);
+      control.addEventListener("change", formatNow);
+    });
+
+    inputText.value = sample;
+    formatNow();
+  </script>
+</body>
+</html>
