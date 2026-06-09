@@ -32,7 +32,7 @@ Generated novel project files should follow the upstream structure:
 
 This workspace has a project-specific writing bible:
 
-- `CLAUDE.md` — source-of-truth writing rules for `중고 노트북 속 AI가 너무 전능함`
+- `CLAUDE.md` — source-of-truth writing rules for `중고 노트북 속 오리가 너무 전능함`
 - `novel-config.md` — maps the writing bible and design documents into the harness
 - `design/future-ai_*.md` — bootstrap, character sheet, and plot/hook guides
 

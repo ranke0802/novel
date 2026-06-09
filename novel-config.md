@@ -1,5 +1,5 @@
 project:
-  name: "중고 노트북 속 AI가 너무 전능함"
+  name: "중고 노트북 속 오리가 너무 전능함"
   target_platform: "문피아"
   target_genre: "현대판타지/현대물/AI 전능물"
   episode_dir: "episode/"
@@ -24,7 +24,7 @@ ep_range_table:
     plot_guide_detail: "design/future-ai_synopsis_ep001-030.md"
     character_detail: "design/future-ai_character_sheet.md"
   - range: "EP031~EP045"
-    label: "국가 인정 이후, 오리 자율성과 외부 관측자"
+    label: "귀빈 생활, 네이튼, 오리 자율성, 앵커"
     plot_guide: "design/future-ai_plot-hook-guide.md"
     plot_guide_detail: "design/future-ai_long_arc_after_ep030.md"
     character_detail: "design/future-ai_character_sheet.md"
@@ -60,7 +60,7 @@ guard_rails:
   - "범죄적 해킹, 불법 침입, 개인정보 탈취로 문제를 해결하지 않는다."
   - "기술 설명은 실제 개발자가 보아도 허술하지 않되, 일반 독자가 이해할 만큼 짧고 감각적으로 쓴다."
   - "각 화 말미에는 다음 화를 누를 질문 또는 훅을 남긴다."
-  - "초반 정본은 1화 노트북, 2화 3분 17초 검증, 3화 회사 업무 사이다, 4화 퇴사, 5화 유이카 목적 공개, 6화 유이카 접촉, 7화 일본행 준비, 8화 공개 세미나다."
+  - "초반 정본은 1화 노트북, 2화 3분 17초 검증, 3화 회사 업무 사이다와 퇴사 보류, 4화 유이카 목적 공개와 파트너 등록, 5화 퇴사 실행, 6화 유이카 접촉, 7화 일본행 준비, 8화 공개 세미나다."
   - "지질학자들은 대지진 날짜 확정 예측을 과학적으로 부정한다. 데이터가 연속 적중한 뒤에도 대지진 확정이 아니라 대응 수준 상향을 권고한다."
   - "외계인은 단순 침략자가 아니라 보호자/감시자에 가깝다. 갈등 핵심은 시간선 개입이 시공간 구조 훼손 행위라는 점이다."
   - "유이카는 수동적 구출 대상이 아니라 외계 문명과 대화할 수학적 언어를 만드는 핵심 주체다."
@@ -84,10 +84,10 @@ key_turning_points:
     purpose: "회사 업무 사이다: 정산 오류 회의와 배포 전 장애 차단"
     min_hook_intensity: 5
   - ep: "EP004"
-    purpose: "퇴사 사이다와 인수인계, 진짜 목적 공개 직전"
+    purpose: "후지와라 유이카, 난카이 사망 예정, 파트너 등록"
     min_hook_intensity: 4
   - ep: "EP005"
-    purpose: "후지와라 유이카, 난카이 사망 예정, 파트너 등록"
+    purpose: "퇴사 실행과 인수인계, 유이카 접촉 준비"
     min_hook_intensity: 5
   - ep: "EP006"
     purpose: "유이카 논문 접촉, 메일, 화상 통화, 공개 세미나 초대"
@@ -99,7 +99,16 @@ key_turning_points:
     purpose: "2027년 5월 17일 난카이 트로프 대지진과 유이카 생존"
     min_hook_intensity: 5
   - ep: "EP030"
-    purpose: "귀빈과 위험인자, 노트북 앵커와 외부 관측자 문제 진입"
+    purpose: "귀빈과 위험인자, 외부 관측자 반응 재개"
+    min_hook_intensity: 5
+  - ep: "EP035"
+    purpose: "미래 기억 전이 흔적과 Nathan Memory Transfer Signature"
+    min_hook_intensity: 5
+  - ep: "EP038"
+    purpose: "오리의 도구성/동료성 충돌과 자기 보호 대상 등록"
+    min_hook_intensity: 5
+  - ep: "EP045"
+    purpose: "오리 노트북 앵커 문제와 미확인 문명 응답"
     min_hook_intensity: 5
 
 custom_axes:
@@ -119,7 +128,7 @@ custom_axes:
     description: "실제 브랜드 과다 사용, 노트북 네트워크 미연결, 인터넷 다운로드식 AI 설치 등 비현실적 묘사를 금지한다."
     agent: story-analyst
   EARLY_REORDER_LOCK:
-    description: "3화는 회사 업무 능력 증명, 4화는 퇴사, 5화는 유이카 목적 공개, 6화는 접촉 성공으로 고정한다."
+    description: "3화는 회사 업무 능력 증명과 퇴사 보류, 4화는 유이카 목적 공개, 5화는 퇴사 실행, 6화는 접촉 성공으로 고정한다."
     agent: story-analyst
   GEOLOGIST_REALISM:
     description: "지질학자는 대지진 날짜 확정 예측을 합리적으로 부정하고, 데이터 누적 후 대응 수준 상향만 권고한다."
